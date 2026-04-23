@@ -1,0 +1,20 @@
+package com.oes.entity;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.oes.common.base.BaseEntity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+@TableName("sys_user")
+public class SysUser extends BaseEntity {
+    private String username;
+    private String password;
+    private String realName;
+    private String email;
+    private String phone;
+    private String avatar;
+    private String role;
+    private Integer status;
+}
