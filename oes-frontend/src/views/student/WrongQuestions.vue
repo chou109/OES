@@ -10,7 +10,7 @@
         <el-select v-model="params.subjectId" placeholder="选择科目" style="width: 180px" clearable @change="loadData">
           <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
         </el-select>
-        <el-button type="primary" @click="loadData">搜索</el-button>
+        <el-button type="danger" @click="loadData">搜索</el-button>
       </div>
 
       <el-table :data="tableData" v-loading="loading" stripe>
@@ -29,7 +29,7 @@
         <el-table-column prop="practicedCount" label="练习次数" width="100" />
         <el-table-column label="操作" width="120">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handlePractice(row)">练习</el-button>
+            <el-button type="danger" link @click="handlePractice(row)">练习</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -81,7 +81,7 @@
       </div>
       <template #footer>
         <el-button @click="practiceVisible = false">关闭</el-button>
-        <el-button type="primary" v-if="!showResult" @click="checkAnswer">提交答案</el-button>
+        <el-button type="danger" v-if="!showResult" @click="checkAnswer">提交答案</el-button>
         <el-button type="success" v-else @click="nextQuestion">下一题</el-button>
       </template>
     </el-dialog>

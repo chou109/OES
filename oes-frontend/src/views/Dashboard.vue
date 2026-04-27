@@ -13,7 +13,7 @@
               <el-icon><Collection /></el-icon>
             </div>
             <h3>{{ userInfo.role === 'TEACHER' ? '我的班级' : '我的班级' }}</h3>
-            <el-button v-if="userInfo.role === 'TEACHER'" type="primary" link @click="$router.push('/classes')">
+            <el-button v-if="userInfo.role === 'TEACHER'" type="danger" link @click="$router.push('/classes')">
               管理班级
             </el-button>
           </div>
@@ -25,7 +25,7 @@
                 <p class="class-students">学生人数: {{ cls.studentCount || 0 }}</p>
               </div>
               <div class="class-actions">
-                <el-button type="primary" size="small">查看</el-button>
+                <el-button type="danger" size="small">查看</el-button>
               </div>
             </div>
           </div>
@@ -52,7 +52,7 @@
             <el-table-column prop="startTime" label="开始时间" width="180" />
             <el-table-column label="操作" width="100">
               <template #default="{ row }">
-                <el-button type="primary" link @click="goToExam(row)">查看</el-button>
+                <el-button type="danger" link @click="goToExam(row)">查看</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -214,7 +214,7 @@ onMounted(() => {
 
 .quick-action .el-icon {
   font-size: 32px;
-  color: var(--brand-600);
+  color: #FF6A6A;
 }
 
 .quick-action span {

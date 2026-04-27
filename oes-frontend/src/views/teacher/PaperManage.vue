@@ -15,8 +15,8 @@
           <el-option label="已发布" value="PUBLISHED" />
         </el-select>
         <el-input v-model="params.keyword" placeholder="搜索试卷标题" style="width: 200px" clearable @change="loadData" />
-        <el-button type="primary" @click="loadData">搜索</el-button>
-        <el-button type="success" @click="handleCreate">创建试卷</el-button>
+        <el-button type="danger" @click="loadData">搜索</el-button>
+        <el-button type="danger" @click="handleCreate">创建试卷</el-button>
       </div>
 
       <el-table :data="tableData" v-loading="loading" stripe>
@@ -40,9 +40,9 @@
         </el-table-column>
         <el-table-column label="操作" width="240" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-button type="success" link @click="handlePreview(row)">预览</el-button>
-            <el-button type="warning" link v-if="row.status === 'DRAFT'" @click="handlePublish(row)">发布</el-button>
+            <el-button type="danger" link @click="handleEdit(row)">编辑</el-button>
+            <el-button type="danger" link @click="handlePreview(row)">预览</el-button>
+            <el-button type="danger" link v-if="row.status === 'DRAFT'" @click="handlePublish(row)">发布</el-button>
             <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -127,7 +127,7 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button type="danger" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
   </div>

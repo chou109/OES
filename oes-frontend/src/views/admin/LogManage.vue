@@ -9,7 +9,7 @@
       <div class="toolbar">
         <el-input v-model="params.username" placeholder="操作用户" style="width: 160px" clearable @change="loadData" />
         <el-input v-model="params.operation" placeholder="操作描述" style="width: 200px" clearable @change="loadData" />
-        <el-button type="primary" @click="loadData">搜索</el-button>
+        <el-button type="danger" @click="loadData">搜索</el-button>
       </div>
 
       <el-table :data="tableData" v-loading="loading" stripe>

@@ -2,7 +2,7 @@
   <div class="classes">
     <div class="page-header">
       <h2>班级管理</h2>
-      <el-button type="primary" @click="openCreateDialog">
+      <el-button type="danger" @click="openCreateDialog">
         <el-icon><Plus /></el-icon>
         新建班级
       </el-button>
@@ -24,7 +24,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="loadClasses">查询</el-button>
+          <el-button type="danger" @click="loadClasses">查询</el-button>
           <el-button @click="resetSearch">重置</el-button>
         </el-form-item>
       </el-form>
@@ -39,9 +39,9 @@
         <el-table-column prop="createTime" label="创建时间" width="180" />
         <el-table-column label="操作" width="200">
           <template #default="{ row }">
-            <el-button type="primary" link @click="openEditDialog(row)">编辑</el-button>
+            <el-button type="danger" link @click="openEditDialog(row)">编辑</el-button>
             <el-button type="danger" link @click="deleteClass(row.id)">删除</el-button>
-            <el-button type="info" link @click="manageStudents(row.id)">管理学生</el-button>
+            <el-button type="danger" link @click="manageStudents(row.id)">管理学生</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -83,7 +83,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="saveClass">保存</el-button>
+          <el-button type="danger" @click="saveClass">保存</el-button>
         </span>
       </template>
     </el-dialog>
@@ -104,7 +104,7 @@
             <el-table-column prop="realName" label="姓名" />
             <el-table-column label="操作" width="80">
               <template #default="{ row }">
-                <el-button type="primary" link @click="addStudent(row.id)">
+                <el-button type="danger" link @click="addStudent(row.id)">
                   <el-icon><Plus /></el-icon>
                 </el-button>
               </template>

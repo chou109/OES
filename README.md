@@ -1,4 +1,4 @@
-# 在线考试系统 (OES - Online Exam System)
+# 在线考试系统 (ExamPro - Online Exam System)
 
 一个基于 Vue + Spring Boot 的在线考试系统，支持多种题型、防作弊机制和成绩分析。
 
@@ -25,7 +25,7 @@ OES/
 │       ├── views/       # 页面组件
 │       └── styles/      # 样式文件
 └── sql/
-    └── oes_database.sql # 数据库脚本
+    └── ExamPro.sql # 数据库脚本
 ```
 
 ## 技术栈
@@ -63,7 +63,7 @@ OES/
 mysql -u root -p
 
 # 执行数据库脚本
-source sql/oes_database.sql
+source sql/ExamPro.sql
 ```
 
 ### 2. 后端启动

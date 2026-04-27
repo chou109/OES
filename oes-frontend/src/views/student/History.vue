@@ -16,7 +16,7 @@
         <el-table-column prop="submitTime" label="交卷时间" width="180" />
         <el-table-column label="操作" width="120">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleDetail(row)">查看详情</el-button>
+            <el-button type="danger" link @click="handleDetail(row)">查看详情</el-button>
           </template>
         </el-table-column>
       </el-table>

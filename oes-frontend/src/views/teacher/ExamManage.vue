@@ -16,8 +16,8 @@
           <el-option label="已结束" value="FINISHED" />
         </el-select>
         <el-input v-model="params.keyword" placeholder="搜索考试标题" style="width: 200px" clearable @change="loadData" />
-        <el-button type="primary" @click="loadData">搜索</el-button>
-        <el-button type="success" @click="handleCreate">发布考试</el-button>
+        <el-button type="danger" @click="loadData">搜索</el-button>
+        <el-button type="danger" @click="handleCreate">发布考试</el-button>
       </div>
 
       <el-table :data="tableData" v-loading="loading" stripe>
@@ -39,11 +39,11 @@
         </el-table-column>
         <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleMonitor(row)">监控</el-button>
-            <el-button type="success" link v-if="row.status === 'PENDING'" @click="handleStart(row)">开始</el-button>
-            <el-button type="warning" link v-if="row.status === 'ONGOING'" @click="handleExtend(row)">延时</el-button>
+            <el-button type="danger" link @click="handleMonitor(row)">监控</el-button>
+            <el-button type="danger" link v-if="row.status === 'PENDING'" @click="handleStart(row)">开始</el-button>
+            <el-button type="danger" link v-if="row.status === 'ONGOING'" @click="handleExtend(row)">延时</el-button>
             <el-button type="danger" link v-if="row.status === 'ONGOING'" @click="handleFinish(row)">结束</el-button>
-            <el-button type="info" link @click="handleStats(row)">统计</el-button>
+            <el-button type="danger" link @click="handleStats(row)">统计</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -107,7 +107,7 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">发布</el-button>
+        <el-button type="danger" @click="handleSubmit">发布</el-button>
       </template>
     </el-dialog>
 

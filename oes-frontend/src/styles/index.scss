@@ -159,3 +159,37 @@ body {
 .el-select .el-input__wrapper {
   border-radius: 10px !important;
 }
+
+/* 自定义消息提示样式 */
+.el-message--success {
+  background: linear-gradient(135deg, #FF6A6A, #CD5C5C) !important;
+  border-color: #FF6A6A !important;
+  color: white !important;
+}
+
+.el-message--success .el-message__content {
+  color: white !important;
+}
+
+.el-message--success .el-message__icon {
+  color: white !important;
+}
+
+.el-message--success .el-icon {
+  color: white !important;
+}
+
+.el-message--success svg {
+  color: white !important;
+  fill: white !important;
+}
+
+/* 强制覆盖Element Plus图标颜色 */
+.el-message--success .el-icon-success {
+  color: white !important;
+}
+
+.el-message--success .el-icon-success svg {
+  fill: white !important;
+  color: white !important;
+}

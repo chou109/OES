@@ -8,8 +8,8 @@
     <div class="card">
       <div class="toolbar">
         <el-input v-model="params.keyword" placeholder="搜索科目" style="width: 200px" clearable @change="loadData" />
-        <el-button type="primary" @click="loadData">搜索</el-button>
-        <el-button type="success" @click="handleCreate">新增科目</el-button>
+        <el-button type="danger" @click="loadData">搜索</el-button>
+        <el-button type="danger" @click="handleCreate">新增科目</el-button>
       </div>
 
       <el-table :data="tableData" v-loading="loading" stripe>
@@ -19,7 +19,7 @@
         <el-table-column prop="description" label="描述" show-overflow-tooltip />
         <el-table-column label="操作" width="200">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+            <el-button type="danger" link @click="handleEdit(row)">编辑</el-button>
             <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -51,7 +51,7 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button type="danger" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
   </div>

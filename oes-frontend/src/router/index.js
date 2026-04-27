@@ -73,6 +73,12 @@ const routes = [
         meta: { title: '考试记录', roles: ['ADMIN', 'TEACHER'] }
       },
       {
+        path: 'account',
+        name: 'Account',
+        component: () => import('../views/Account.vue'),
+        meta: { title: '账号管理', roles: ['STUDENT', 'TEACHER'] }
+      },
+      {
         path: 'student/exams',
         name: 'StudentExamList',
         component: () => import('../views/student/ExamList.vue'),

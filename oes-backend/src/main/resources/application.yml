@@ -3,10 +3,10 @@ server:
 
 spring:
   application:
-    name: oes-backend
+    name: exam-pro-backend
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/oes?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    url: jdbc:mysql://localhost:3306/exam_pro?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
     username: root
     password: 123456
 
@@ -22,5 +22,5 @@ mybatis-plus:
       logic-not-delete-value: 0
 
 jwt:
-  secret: oes-secret-key-2024-very-long-secret-key-for-jwt-token-generation
+  secret: exam-pro-secret-key-2024-very-long-secret-key-for-jwt-token-generation
   expiration: 86400000

@@ -15,7 +15,7 @@
           <el-option label="进行中" value="ONGOING" />
           <el-option label="已交卷" value="SUBMITTED" />
         </el-select>
-        <el-button type="primary" @click="loadData">搜索</el-button>
+        <el-button type="danger" @click="loadData">搜索</el-button>
       </div>
 
       <el-table :data="tableData" v-loading="loading" stripe>
@@ -38,7 +38,7 @@
         <el-table-column prop="submitTime" label="交卷时间" width="180" />
         <el-table-column label="操作" width="100">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleDetail(row)">详情</el-button>
+            <el-button type="danger" link @click="handleDetail(row)">详情</el-button>
           </template>
         </el-table-column>
       </el-table>

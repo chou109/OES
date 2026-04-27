@@ -29,7 +29,7 @@
             </div>
           </div>
           <div class="exam-actions">
-            <el-button type="primary" @click="handleJoin(exam)" :disabled="exam.status !== 'ONGOING'">
+            <el-button type="danger" @click="handleJoin(exam)" :disabled="exam.status !== 'ONGOING'">
               {{ exam.status === 'ONGOING' ? '进入考试' : '等待开始' }}
             </el-button>
           </div>

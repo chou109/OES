@@ -13,8 +13,8 @@
           <el-option label="教师" value="TEACHER" />
           <el-option label="管理员" value="ADMIN" />
         </el-select>
-        <el-button type="primary" @click="loadData">搜索</el-button>
-        <el-button type="success" @click="handleCreate">新增用户</el-button>
+        <el-button type="danger" @click="loadData">搜索</el-button>
+        <el-button type="danger" @click="handleCreate">新增用户</el-button>
       </div>
 
       <el-table :data="tableData" v-loading="loading" stripe>
@@ -40,8 +40,8 @@
         <el-table-column prop="createTime" label="创建时间" width="180" />
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-button type="warning" link @click="handleStatus(row)">
+            <el-button type="danger" link @click="handleEdit(row)">编辑</el-button>
+            <el-button type="danger" link @click="handleStatus(row)">
               {{ row.status === 1 ? '禁用' : '启用' }}
             </el-button>
             <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
@@ -88,7 +88,7 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button type="danger" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
   </div>

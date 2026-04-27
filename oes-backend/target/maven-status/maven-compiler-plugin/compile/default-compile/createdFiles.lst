@@ -34,6 +34,7 @@ com\oes\controller\ExamKnowledgePointController.class
 com\oes\controller\AuthController.class
 com\oes\entity\ExamKnowledgePoint.class
 com\oes\mapper\ExamWrongQuestionMapper.class
+com\oes\controller\UploadController.class
 com\oes\mapper\SysLogMapper.class
 com\oes\entity\SysUser.class
 com\oes\mapper\ExamKnowledgePointMapper.class
@@ -49,6 +50,7 @@ com\oes\common\base\PageResult.class
 com\oes\service\ExamKnowledgePointService.class
 com\oes\common\base\BaseEntity.class
 com\oes\entity\SysLog.class
+com\oes\config\WebMvcConfig.class
 com\oes\controller\SysLogController.class
 com\oes\controller\ExamQuestionController.class
 com\oes\mapper\ExamSubjectMapper.class

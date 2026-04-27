@@ -46,7 +46,9 @@ public class SysUserService extends ServiceImpl<SysUserMapper, SysUser> {
             throw new RuntimeException("用户名已存在");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole("STUDENT");
+        if (!StringUtils.hasText(user.getRole())) {
+            user.setRole("STUDENT");
+        }
         user.setStatus(1);
         return save(user);
     }

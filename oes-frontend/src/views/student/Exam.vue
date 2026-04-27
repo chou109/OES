@@ -10,7 +10,7 @@
           <el-icon><Timer /></el-icon>
           <span :class="{ warning: remainingTime < 300 }">{{ formatTime(remainingTime) }}</span>
         </div>
-        <el-button type="primary" @click="handleSubmit" :loading="submitting">交卷</el-button>
+        <el-button type="danger" @click="handleSubmit" :loading="submitting">交卷</el-button>
       </div>
     </header>
 
