@@ -6,31 +6,35 @@
     </div>
 
     <el-row :gutter="24">
-      <el-col :span="8" v-for="exam in tableData" :key="exam.id">
+      <el-col :span="8" v-for="item in tableData" :key="item.exam.id">
         <div class="exam-card">
           <div class="exam-header">
-            <h3>{{ exam.title }}</h3>
-            <el-tag :type="exam.status === 'ONGOING' ? 'success' : 'warning'">
-              {{ exam.status === 'ONGOING' ? '进行中' : '即将开始' }}
+            <h3>{{ item.exam.title }}</h3>
+            <el-tag :type="getExamStatusType(item)">
+              {{ getExamStatusText(item) }}
             </el-tag>
           </div>
           <div class="exam-info">
             <div class="info-item">
               <el-icon><Clock /></el-icon>
-              <span>考试时长：{{ exam.duration }} 分钟</span>
+              <span>考试时长：{{ item.exam.duration }} 分钟</span>
             </div>
             <div class="info-item">
               <el-icon><Timer /></el-icon>
-              <span>总分：{{ exam.totalScore }}</span>
+              <span>总分：{{ item.exam.totalScore }}</span>
             </div>
             <div class="info-item">
               <el-icon><Calendar /></el-icon>
-              <span>{{ formatTime(exam.startTime) }}</span>
+              <span>{{ formatTime(item.exam.startTime) }}</span>
             </div>
           </div>
           <div class="exam-actions">
-            <el-button type="danger" @click="handleJoin(exam)" :disabled="exam.status !== 'ONGOING'">
-              {{ exam.status === 'ONGOING' ? '进入考试' : '等待开始' }}
+            <el-button 
+              :type="item.studentStatus === 'SUBMITTED' ? 'success' : 'danger'" 
+              @click="handleJoin(item.exam)" 
+              :disabled="!canJoin(item)"
+            >
+              {{ getButtonText(item) }}
             </el-button>
           </div>
         </div>
@@ -53,6 +57,28 @@ const tableData = ref([])
 const formatTime = (time) => {
   if (!time) return ''
   return new Date(time).toLocaleString('zh-CN')
+}
+
+const getExamStatusType = (item) => {
+  if (item.studentStatus === 'SUBMITTED') return 'success'
+  if (item.exam.status === 'ONGOING') return 'warning'
+  return 'info'
+}
+
+const getExamStatusText = (item) => {
+  if (item.studentStatus === 'SUBMITTED') return '已完成'
+  if (item.exam.status === 'ONGOING') return '进行中'
+  return '即将开始'
+}
+
+const canJoin = (item) => {
+  return item.exam.status === 'ONGOING' && item.studentStatus !== 'SUBMITTED'
+}
+
+const getButtonText = (item) => {
+  if (item.studentStatus === 'SUBMITTED') return '已交卷'
+  if (item.exam.status === 'ONGOING') return '进入考试'
+  return '等待开始'
 }
 
 const handleJoin = (exam) => {

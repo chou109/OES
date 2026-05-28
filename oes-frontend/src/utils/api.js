@@ -4,7 +4,7 @@ import { useUserStore } from '../store'
 
 const request = axios.create({
   baseURL: '/api',
-  timeout: 10000,
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json;charset=UTF-8'
   }
@@ -137,8 +137,8 @@ export const paperApi = {
   page: (params) => request.get('/papers/page', { params }),
   getById: (id) => request.get(`/papers/${id}`),
   getQuestions: (id) => request.get(`/papers/${id}/questions`),
-  create: (data, params) => request.post('/papers', data, { params }),
-  update: (data, params) => request.put('/papers', data, { params }),
+  create: (data) => request.post('/papers', data),
+  update: (data) => request.put('/papers', data),
   publish: (id) => request.put(`/papers/${id}/publish`),
   delete: (id) => request.delete(`/papers/${id}`)
 }
@@ -165,6 +165,7 @@ export const examRecordApi = {
   autoSave: (data) => request.post('/exam-records/auto-save', data),
   submit: (id) => request.post(`/exam-records/submit/${id}`),
   screenSwitch: (data) => request.post('/exam-records/screen-switch', data),
+  reportLeave: (data) => request.post('/exam-records/report-leave', data),
   getAnswers: (id) => request.get(`/exam-records/${id}/answers`),
   getStudentHistory: (params) => request.get('/exam-records/student/history', { params }),
   getAnalysis: (params) => request.get('/exam-records/analysis', { params }),

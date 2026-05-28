@@ -17,6 +17,7 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,34 +47,47 @@ public class ExamPaperService extends ServiceImpl<ExamPaperMapper, ExamPaper> {
         return new PageResult<>(result.getTotal(), result.getRecords(), (long) current, (long) size);
     }
 
-    public boolean createPaper(ExamPaper paper, List<Long> questionIds) {
+    public boolean createPaper(ExamPaper paper, List<Long> questionIds, Map<Long, Integer> questionScores) {
         if (questionIds != null && !questionIds.isEmpty()) {
             paper.setQuestionIds(String.join(",", questionIds.stream()
                     .map(String::valueOf)
                     .collect(Collectors.toList())));
             paper.setQuestionCount(questionIds.size());
 
-            List<ExamQuestion> questions = examQuestionService.listByIds(questionIds);
-            int totalScore = questions.stream().mapToInt(ExamQuestion::getScore).sum();
-            paper.setTotalScore(totalScore);
-
+            // 计算总分：优先使用传入的分数，否则使用题目默认分数
+            int totalScore = 0;
             for (Long qId : questionIds) {
+                Integer score = (questionScores != null) ? questionScores.get(qId) : null;
+                if (score == null) {
+                    ExamQuestion q = examQuestionService.getById(qId);
+                    score = (q != null && q.getScore() != null) ? q.getScore() : 5;
+                }
+                totalScore += score;
                 examQuestionService.incrementUsedCount(qId);
             }
+            paper.setTotalScore(totalScore);
         }
         paper.setStatus("DRAFT");
         return save(paper);
     }
 
-    public boolean updatePaper(ExamPaper paper, List<Long> questionIds) {
+    public boolean updatePaper(ExamPaper paper, List<Long> questionIds, Map<Long, Integer> questionScores) {
         if (questionIds != null && !questionIds.isEmpty()) {
             paper.setQuestionIds(String.join(",", questionIds.stream()
                     .map(String::valueOf)
                     .collect(Collectors.toList())));
             paper.setQuestionCount(questionIds.size());
 
-            List<ExamQuestion> questions = examQuestionService.listByIds(questionIds);
-            int totalScore = questions.stream().mapToInt(ExamQuestion::getScore).sum();
+            // 计算总分：优先使用传入的分数，否则使用题目默认分数
+            int totalScore = 0;
+            for (Long qId : questionIds) {
+                Integer score = (questionScores != null) ? questionScores.get(qId) : null;
+                if (score == null) {
+                    ExamQuestion q = examQuestionService.getById(qId);
+                    score = (q != null && q.getScore() != null) ? q.getScore() : 5;
+                }
+                totalScore += score;
+            }
             paper.setTotalScore(totalScore);
         }
         return updateById(paper);

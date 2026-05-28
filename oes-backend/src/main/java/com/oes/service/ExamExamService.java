@@ -6,24 +6,32 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.oes.common.base.PageResult;
 import com.oes.entity.ExamExam;
+import com.oes.entity.ExamExamRecord;
 import com.oes.entity.ExamStatistics;
+import com.oes.entity.SysClassMember;
 import com.oes.mapper.ExamExamMapper;
 import com.oes.mapper.ExamStatisticsMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class ExamExamService extends ServiceImpl<ExamExamMapper, ExamExam> {
 
     private final ExamStatisticsMapper examStatisticsMapper;
+    private final ExamExamRecordService examExamRecordService;
+    private final SysClassMemberService sysClassMemberService;
 
-    public ExamExamService(ExamStatisticsMapper examStatisticsMapper) {
+    public ExamExamService(ExamStatisticsMapper examStatisticsMapper,
+                          ExamExamRecordService examExamRecordService,
+                          SysClassMemberService sysClassMemberService) {
         this.examStatisticsMapper = examStatisticsMapper;
+        this.examExamRecordService = examExamRecordService;
+        this.sysClassMemberService = sysClassMemberService;
     }
 
     public PageResult<ExamExam> page(Integer current, Integer size, Long subjectId, String status, String keyword) {
@@ -43,18 +51,36 @@ public class ExamExamService extends ServiceImpl<ExamExamMapper, ExamExam> {
         return new PageResult<>(result.getTotal(), result.getRecords(), (long) current, (long) size);
     }
 
-    public PageResult<ExamExam> studentPage(Integer current, Integer size, Long studentId, String status) {
+    public PageResult<Map<String, Object>> studentPageWithStatus(Integer current, Integer size, Long studentId) {
         Page<ExamExam> page = new Page<>(current, size);
         LambdaQueryWrapper<ExamExam> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ExamExam::getStatus, "ONGOING");
         wrapper.or(w -> w.eq(ExamExam::getStatus, "PENDING")
                 .gt(ExamExam::getEndTime, LocalDateTime.now()));
-        if (StringUtils.hasText(status)) {
-            wrapper.eq(ExamExam::getStatus, status);
-        }
         wrapper.orderByAsc(ExamExam::getStartTime);
         IPage<ExamExam> result = page(page, wrapper);
-        return new PageResult<>(result.getTotal(), result.getRecords(), (long) current, (long) size);
+        
+        List<Map<String, Object>> records = new ArrayList<>();
+        for (ExamExam exam : result.getRecords()) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("exam", exam);
+            
+            if (studentId != null) {
+                ExamExamRecord record = examExamRecordService.getByExamAndStudent(exam.getId(), studentId);
+                if (record != null && "SUBMITTED".equals(record.getStatus())) {
+                    map.put("studentStatus", "SUBMITTED");
+                } else if (record != null && "ONGOING".equals(record.getStatus())) {
+                    map.put("studentStatus", "ONGOING");
+                } else {
+                    map.put("studentStatus", "NOT_STARTED");
+                }
+            } else {
+                map.put("studentStatus", "UNKNOWN");
+            }
+            records.add(map);
+        }
+        
+        return new PageResult<>(result.getTotal(), records, (long) current, (long) size);
     }
 
     public boolean createExam(ExamExam exam) {
@@ -66,13 +92,54 @@ public class ExamExamService extends ServiceImpl<ExamExamMapper, ExamExam> {
         return updateById(exam);
     }
 
+    @Transactional
     public boolean publishExam(Long examId) {
         ExamExam exam = getById(examId);
         if (exam == null) {
             throw new RuntimeException("考试不存在");
         }
+        
+        List<Long> classIds = getClassIds(exam);
+        if (classIds.isEmpty()) {
+            throw new RuntimeException("请先选择发布班级");
+        }
+        
+        Set<Long> studentIds = new HashSet<>();
+        for (Long classId : classIds) {
+            List<SysClassMember> members = sysClassMemberService.getMembersByClassId(classId);
+            for (SysClassMember member : members) {
+                if ("STUDENT".equals(member.getRole()) || "MEMBER".equals(member.getRole())) {
+                    studentIds.add(member.getUserId());
+                }
+            }
+        }
+        
+        if (studentIds.isEmpty()) {
+            throw new RuntimeException("所选班级没有学生");
+        }
+        
+        exam.setStudentIds(studentIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
         exam.setStatus("PENDING");
-        return updateById(exam);
+        boolean updated = updateById(exam);
+        
+        if (updated) {
+            for (Long studentId : studentIds) {
+                ExamExamRecord existingRecord = examExamRecordService.getByExamAndStudent(examId, studentId);
+                if (existingRecord == null) {
+                    ExamExamRecord record = new ExamExamRecord();
+                    record.setExamId(examId);
+                    record.setStudentId(studentId);
+                    record.setPaperId(exam.getPaperId());
+                    record.setStatus("PENDING");
+                    record.setScreenSwitchCount(0);
+                    record.setIsSuspicious(0);
+                    record.setIsAutoSubmit(0);
+                    examExamRecordService.save(record);
+                }
+            }
+        }
+        
+        return updated;
     }
 
     public boolean startExam(Long examId) {

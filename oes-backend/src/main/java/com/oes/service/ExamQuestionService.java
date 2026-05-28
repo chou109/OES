@@ -65,8 +65,11 @@ public class ExamQuestionService extends ServiceImpl<ExamQuestionMapper, ExamQue
                             .map(String::trim)
                             .collect(Collectors.joining(",")));
         }
-        // 使用 apply 方法实现随机排序
-        wrapper.apply("ORDER BY RAND()");
+        // 使用 last 方法实现随机排序
+        wrapper.last("ORDER BY RAND()");
+        if (count == null || count <= 0) {
+            count = 100;
+        }
         return page(new Page<>(1, count), wrapper).getRecords();
     }
 

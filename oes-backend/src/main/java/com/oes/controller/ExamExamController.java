@@ -4,12 +4,14 @@ import com.oes.common.base.PageResult;
 import com.oes.common.base.R;
 import com.oes.entity.ExamExam;
 import com.oes.entity.ExamStatistics;
+import com.oes.common.JwtUtils;
 import com.oes.service.ExamExamService;
 import com.oes.service.SysLogService;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/exams")
@@ -17,10 +19,12 @@ public class ExamExamController {
 
     private final ExamExamService examExamService;
     private final SysLogService sysLogService;
+    private final JwtUtils jwtUtils;
 
-    public ExamExamController(ExamExamService examExamService, SysLogService sysLogService) {
+    public ExamExamController(ExamExamService examExamService, SysLogService sysLogService, JwtUtils jwtUtils) {
         this.examExamService = examExamService;
         this.sysLogService = sysLogService;
+        this.jwtUtils = jwtUtils;
     }
 
     @GetMapping("/page")
@@ -34,12 +38,13 @@ public class ExamExamController {
     }
 
     @GetMapping("/student/page")
-    public R<PageResult<ExamExam>> studentPage(
+    public R<PageResult<Map<String, Object>>> studentPage(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) Long studentId,
-            @RequestParam(required = false) String status) {
-        return R.ok(examExamService.studentPage(current, size, studentId, status));
+            HttpServletRequest request) {
+        String token = request.getHeader("Authorization").replace("Bearer ", "");
+        Long studentId = jwtUtils.getUserIdFromToken(token);
+        return R.ok(examExamService.studentPageWithStatus(current, size, studentId));
     }
 
     @GetMapping("/{id}")

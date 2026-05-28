@@ -20,6 +20,7 @@ public class ExamExamRecord extends BaseEntity {
     private String questionOrder;
     private String optionOrder;
     private Integer screenSwitchCount;
+    private Integer leaveCount;
     private Integer isSuspicious;
     private Integer isAutoSubmit;
     private String status;

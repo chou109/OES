@@ -28,8 +28,12 @@
             {{ getSubjectName(row.subjectId) }}
           </template>
         </el-table-column>
-        <el-table-column prop="startTime" label="开始时间" width="160" />
-        <el-table-column prop="endTime" label="结束时间" width="160" />
+        <el-table-column label="开始时间" width="160">
+          <template #default="{ row }">{{ formatDateTime(row.startTime) }}</template>
+        </el-table-column>
+        <el-table-column label="结束时间" width="160">
+          <template #default="{ row }">{{ formatDateTime(row.endTime) }}</template>
+        </el-table-column>
         <el-table-column prop="duration" label="时长" width="80" />
         <el-table-column prop="totalScore" label="总分" width="80" />
         <el-table-column prop="status" label="状态" width="100">
@@ -70,6 +74,11 @@
             <el-option v-for="p in papers" :key="p.id" :label="p.title" :value="p.id" />
           </el-select>
         </el-form-item>
+        <el-form-item label="选择班级" prop="classIds" :rules="[{ required: true, message: '请选择至少一个班级', trigger: 'change' }]">
+          <el-select v-model="form.classIds" multiple placeholder="选择发布班级" style="width: 100%">
+            <el-option v-for="c in classes" :key="c.id" :label="c.name" :value="c.id" />
+          </el-select>
+        </el-form-item>
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="开始时间">
@@ -89,8 +98,9 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="及格分数">
-              <el-input-number v-model="form.passScore" :min="0" :max="form.totalScore" style="width: 100%" />
+            <el-form-item label="及格比例">
+              <el-input-number v-model="form.passRate" :min="0" :max="100" style="width: 100%" />
+              <span style="margin-left: 8px; color: #909399">%</span>
             </el-form-item>
           </el-col>
         </el-row>
@@ -101,8 +111,12 @@
         <el-form-item label="选项乱序">
           <el-switch v-model="form.config.shuffleOptions" />
         </el-form-item>
-        <el-form-item label="切屏检测">
-          <el-switch v-model="form.config.screenSwitchDetection" />
+        <el-form-item label="离开检测">
+          <el-switch v-model="form.config.leaveDetection" />
+        </el-form-item>
+        <el-form-item label="离开次数上限" v-if="form.config.leaveDetection">
+          <el-input-number v-model="form.config.maxLeaveCount" :min="1" :max="10" style="width: 100%" />
+          <span style="margin-left: 8px; color: #909399">次，超过将自动收卷</span>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -162,13 +176,18 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { examApi, subjectApi, paperApi, examRecordApi } from '../../utils/api'
+import { examApi, subjectApi, paperApi, examRecordApi, classApi } from '../../utils/api'
+import { useUserStore } from '../../store'
 
+const route = useRoute()
+const userStore = useUserStore()
 const loading = ref(false)
 const tableData = ref([])
 const subjects = ref([])
 const papers = ref([])
+const classes = ref([])
 const current = ref(1)
 const size = ref(10)
 const total = ref(0)
@@ -186,12 +205,13 @@ const form = reactive({
   title: '',
   paperId: null,
   subjectId: null,
+  classIds: [],
   startTime: null,
   endTime: null,
   duration: 120,
   totalScore: 100,
-  passScore: 60,
-  config: { shuffleQuestions: true, shuffleOptions: true, screenSwitchDetection: true }
+  passRate: 60,
+  config: { shuffleQuestions: true, shuffleOptions: true, leaveDetection: false, maxLeaveCount: 3 }
 })
 
 const rules = {
@@ -202,6 +222,16 @@ const rules = {
 const statusType = (s) => ({ PENDING: 'warning', ONGOING: 'success', FINISHED: 'info' }[s])
 const statusText = (s) => ({ PENDING: '待开始', ONGOING: '进行中', FINISHED: '已结束' }[s])
 const getSubjectName = (id) => subjects.value.find(s => s.id === id)?.name || ''
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const h = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  return `${y}/${m}/${d} ${h}:${min}`
+}
 
 const loadData = async () => {
   loading.value = true
@@ -221,18 +251,36 @@ const loadPapers = async () => {
   if (res.code === 200) papers.value = res.data.records
 }
 
+const loadClasses = async () => {
+  try {
+    const rawUserId = userStore.userInfo?.userId
+    const userId = rawUserId ?? localStorage.getItem('userId')
+    if (!userId || String(userId) === 'null' || String(userId) === 'undefined' || String(userId) === 'NaN') {
+      console.warn('userId not found, skipping loadClasses')
+      return
+    }
+    const res = await classApi.getMyClasses(String(userId))
+    if (res.code === 200) {
+      classes.value = res.data.map(item => ({ id: item.class.id, name: item.class.className }))
+    }
+  } catch (e) { 
+    console.error('loadClasses error:', e.message || e)
+  }
+}
+
 const onPaperChange = (paperId) => {
   const paper = papers.value.find(p => p.id === paperId)
   if (paper) {
     form.subjectId = paper.subjectId
     form.totalScore = paper.totalScore
-    form.passScore = paper.passScore
+    form.passRate = Math.round((paper.passScore / paper.totalScore) * 100) || 60
     form.duration = paper.duration
   }
 }
 
 const handleCreate = () => {
-  Object.assign(form, { title: '', paperId: null, subjectId: null, startTime: null, endTime: null, duration: 120, totalScore: 100, passScore: 60, config: { shuffleQuestions: true, shuffleOptions: true, screenSwitchDetection: true } })
+  const queryClassId = route.query.classId
+  Object.assign(form, { title: '', paperId: null, subjectId: null, classIds: queryClassId ? [parseInt(queryClassId)] : [], startTime: null, endTime: null, duration: 120, totalScore: 100, passRate: 60, config: { shuffleQuestions: true, shuffleOptions: true, leaveDetection: false, maxLeaveCount: 3 } })
   dialogVisible.value = true
 }
 
@@ -240,7 +288,20 @@ const handleSubmit = async () => {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
   try {
-    const res = await examApi.create(form)
+    const passScore = Math.round(form.totalScore * form.passRate / 100)
+    const submitData = {
+      title: form.title,
+      paperId: form.paperId,
+      subjectId: form.subjectId,
+      classIds: form.classIds.join(','),
+      startTime: form.startTime,
+      endTime: form.endTime,
+      duration: form.duration,
+      totalScore: form.totalScore,
+      passScore: passScore,
+      config: JSON.stringify(form.config)
+    }
+    const res = await examApi.create(submitData)
     if (res.code === 200) { ElMessage.success('发布成功'); dialogVisible.value = false; loadData() }
     else ElMessage.error(res.message)
   } catch (e) { ElMessage.error(e.message) }
@@ -305,7 +366,7 @@ const handleStats = async (row) => {
   } catch (e) { console.error(e) }
 }
 
-onMounted(() => { loadData(); loadSubjects(); loadPapers() })
+onMounted(() => { loadData(); loadSubjects(); loadPapers(); loadClasses() })
 onUnmounted(() => { if (monitorTimer) clearInterval(monitorTimer) })
 </script>
 

@@ -18,11 +18,6 @@
           <el-option label="简答题" value="ESSAY" />
           <el-option label="编程题" value="PROGRAMMING" />
         </el-select>
-        <el-select v-model="params.difficulty" placeholder="难度" style="width: 120px" clearable @change="loadData">
-          <el-option label="简单" value="EASY" />
-          <el-option label="中等" value="MEDIUM" />
-          <el-option label="困难" value="HARD" />
-        </el-select>
         <el-input v-model="params.keyword" placeholder="搜索题目内容" style="width: 200px" clearable @change="loadData" />
         <el-button type="danger" @click="loadData">搜索</el-button>
         <el-button type="danger" @click="handleCreate">新增题目</el-button>
@@ -36,12 +31,6 @@
           </template>
         </el-table-column>
         <el-table-column prop="content" label="题目内容" show-overflow-tooltip />
-        <el-table-column prop="difficulty" label="难度" width="80">
-          <template #default="{ row }">
-            <el-tag :type="difficultyType(row.difficulty)">{{ difficultyText(row.difficulty) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="score" label="分值" width="80" />
         <el-table-column prop="usedCount" label="使用次数" width="100" />
         <el-table-column label="正确率" width="100">
           <template #default="{ row }">
@@ -68,7 +57,7 @@
       />
     </div>
 
-    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑题目' : '新增题目'" width="700px">
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑题目' : '新增题目'" width="800px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="科目" prop="subjectId">
           <el-select v-model="form.subjectId" style="width: 100%">
@@ -76,7 +65,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="题目类型" prop="type">
-          <el-select v-model="form.type" style="width: 100%">
+          <el-select v-model="form.type" style="width: 100%" @change="handleTypeChange">
             <el-option label="单选题" value="SINGLE_CHOICE" />
             <el-option label="多选题" value="MULTIPLE_CHOICE" />
             <el-option label="判断题" value="JUDGMENT" />
@@ -85,28 +74,63 @@
             <el-option label="编程题" value="PROGRAMMING" />
           </el-select>
         </el-form-item>
-        <el-form-item label="题目内容" prop="content">
-          <el-input v-model="form.content" type="textarea" :rows="3" />
-        </el-form-item>
-        <el-form-item label="选项" v-if="['SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'JUDGMENT'].includes(form.type)">
-          <el-input v-model="form.options" type="textarea" :rows="3" placeholder='{"A":"选项1","B":"选项2","C":"选项3","D":"选项4"}' />
-        </el-form-item>
-        <el-form-item label="正确答案" prop="answer">
-          <el-input v-model="form.answer" />
-        </el-form-item>
-        <el-form-item label="答案解析">
-          <el-input v-model="form.analysis" type="textarea" :rows="2" />
-        </el-form-item>
-        <el-form-item label="难度" prop="difficulty">
-          <el-radio-group v-model="form.difficulty">
-            <el-radio value="EASY">简单</el-radio>
-            <el-radio value="MEDIUM">中等</el-radio>
-            <el-radio value="HARD">困难</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="分值" prop="score">
-          <el-input-number v-model="form.score" :min="1" :max="100" />
-        </el-form-item>
+
+        <template v-if="['SINGLE_CHOICE', 'MULTIPLE_CHOICE'].includes(form.type)">
+          <el-form-item label="选项数量" prop="optionCount">
+            <el-select v-model="form.optionCount" style="width: 150px">
+              <el-option label="2个选项" :value="2" />
+              <el-option label="3个选项" :value="3" />
+              <el-option label="4个选项" :value="4" />
+              <el-option label="5个选项" :value="5" />
+              <el-option label="6个选项" :value="6" />
+            </el-select>
+          </el-form-item>
+        </template>
+
+        <template v-if="['SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'JUDGMENT'].includes(form.type)">
+          <el-form-item label="题目内容" prop="content">
+            <el-input v-model="form.content" type="textarea" :rows="3" />
+          </el-form-item>
+          <el-form-item label="选项" v-for="(option, index) in form.options" :key="index" :label="getOptionLabel(index)">
+            <el-input v-model="option.content" :placeholder="'请输入' + getOptionLabel(index) + '选项内容'" />
+          </el-form-item>
+          <el-form-item label="正确答案" prop="answer">
+            <el-select v-model="form.answer" :multiple="form.type === 'MULTIPLE_CHOICE'" style="width: 100%">
+              <el-option v-for="(option, index) in form.options" :key="index" :label="getOptionLabel(index)" :value="getOptionLabel(index)" />
+            </el-select>
+          </el-form-item>
+        </template>
+
+        <template v-if="form.type === 'FILL_BLANK'">
+          <el-form-item label="题目内容" prop="content">
+            <el-input v-model="form.content" type="textarea" :rows="3" placeholder="输入题目内容，在需要填空的位置输入 $blank$" />
+          </el-form-item>
+          <div class="blank-toolbar">
+            <el-button type="default" size="small" @click="insertBlank">插入填空标记</el-button>
+            <span class="hint">点击按钮在光标位置插入 "$blank$" 作为填空标记</span>
+          </div>
+          <el-form-item label="正确答案" prop="answer">
+            <el-input v-model="form.answer" placeholder="多个空用英文逗号分隔，如：答案1,答案2,答案3" />
+          </el-form-item>
+        </template>
+
+        <template v-if="form.type === 'ESSAY'">
+          <el-form-item label="题目内容" prop="content">
+            <el-input v-model="form.content" type="textarea" :rows="5" />
+          </el-form-item>
+          <el-form-item label="参考答案" prop="answer">
+            <el-input v-model="form.answer" type="textarea" :rows="3" />
+          </el-form-item>
+        </template>
+
+        <template v-if="form.type === 'PROGRAMMING'">
+          <el-form-item label="题目内容" prop="content">
+            <el-input v-model="form.content" type="textarea" :rows="5" />
+          </el-form-item>
+          <el-form-item label="参考答案" prop="answer">
+            <el-input v-model="form.answer" type="textarea" :rows="5" />
+          </el-form-item>
+        </template>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -117,7 +141,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { questionApi, subjectApi } from '../../utils/api'
 
@@ -134,7 +158,6 @@ const formRef = ref()
 const params = reactive({
   subjectId: null,
   type: '',
-  difficulty: '',
   keyword: ''
 })
 
@@ -142,21 +165,17 @@ const form = reactive({
   id: null,
   subjectId: null,
   type: 'SINGLE_CHOICE',
+  optionCount: 4,
   content: '',
-  options: '',
-  answer: '',
-  analysis: '',
-  difficulty: 'MEDIUM',
-  score: 5
+  options: [],
+  answer: ''
 })
 
 const rules = {
   subjectId: [{ required: true, message: '请选择科目', trigger: 'change' }],
   type: [{ required: true, message: '请选择题目类型', trigger: 'change' }],
   content: [{ required: true, message: '请输入题目内容', trigger: 'blur' }],
-  answer: [{ required: true, message: '请输入正确答案', trigger: 'blur' }],
-  difficulty: [{ required: true, message: '请选择难度', trigger: 'change' }],
-  score: [{ required: true, message: '请输入分值', trigger: 'blur' }]
+  answer: [{ required: true, message: '请输入正确答案', trigger: 'blur' }]
 }
 
 const typeText = (type) => {
@@ -164,8 +183,43 @@ const typeText = (type) => {
   return map[type] || type
 }
 
-const difficultyType = (d) => ({ EASY: 'success', MEDIUM: 'warning', HARD: 'danger' }[d])
-const difficultyText = (d) => ({ EASY: '简单', MEDIUM: '中等', HARD: '困难' }[d])
+const getOptionLabel = (index) => {
+  return String.fromCharCode(65 + index)
+}
+
+const initOptions = (count) => {
+  form.options = []
+  for (let i = 0; i < count; i++) {
+    form.options.push({ key: getOptionLabel(i), content: '' })
+  }
+}
+
+const handleTypeChange = () => {
+  form.options = []
+  form.answer = ''
+  
+  if (form.type === 'JUDGMENT') {
+    form.options = [
+      { key: 'A', content: '正确' },
+      { key: 'B', content: '错误' }
+    ]
+    form.optionCount = 2
+  } else if (['SINGLE_CHOICE', 'MULTIPLE_CHOICE'].includes(form.type)) {
+    initOptions(form.optionCount)
+  }
+}
+
+const insertBlank = () => {
+  const textarea = document.querySelector('textarea.el-textarea__inner')
+  if (textarea) {
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const value = form.content
+    form.content = value.substring(0, start) + '$blank$' + value.substring(end)
+  } else {
+    form.content += ' $blank$'
+  }
+}
 
 const loadData = async () => {
   loading.value = true
@@ -189,21 +243,63 @@ const loadSubjects = async () => {
 
 const handleCreate = () => {
   isEdit.value = false
-  Object.assign(form, { id: null, subjectId: null, type: 'SINGLE_CHOICE', content: '', options: '', answer: '', analysis: '', difficulty: 'MEDIUM', score: 5 })
+  Object.assign(form, { id: null, subjectId: null, type: 'SINGLE_CHOICE', optionCount: 4, content: '', options: [], answer: '' })
+  initOptions(4)
   dialogVisible.value = true
 }
 
 const handleEdit = (row) => {
   isEdit.value = true
-  Object.assign(form, row)
+  Object.assign(form, { id: row.id, subjectId: row.subjectId, type: row.type, content: row.content })
+  
+  if (row.type === 'MULTIPLE_CHOICE' && row.answer && row.answer.includes(',')) {
+    form.answer = row.answer.split(',')
+  } else {
+    form.answer = row.answer
+  }
+  
+  if (row.options) {
+    try {
+      const options = typeof row.options === 'string' ? JSON.parse(row.options) : row.options
+      form.options = Object.keys(options).map(key => ({ key, content: options[key] }))
+      form.optionCount = form.options.length
+    } catch {
+      form.options = []
+    }
+  } else if (row.type === 'JUDGMENT') {
+    form.options = [
+      { key: 'A', content: '正确' },
+      { key: 'B', content: '错误' }
+    ]
+    form.optionCount = 2
+  } else {
+    form.options = []
+  }
   dialogVisible.value = true
 }
 
 const handleSubmit = async () => {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
+  
   try {
-    const res = isEdit.value ? await questionApi.update(form) : await questionApi.create(form)
+    let answer = form.answer
+    if (Array.isArray(answer)) {
+      answer = answer.join(',')
+    }
+    
+    const submitForm = {
+      id: form.id,
+      subjectId: form.subjectId,
+      type: form.type,
+      content: form.content,
+      options: ['SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'JUDGMENT'].includes(form.type) 
+        ? JSON.stringify(Object.fromEntries(form.options.map(o => [o.key, o.content])))
+        : null,
+      answer: answer
+    }
+    
+    const res = isEdit.value ? await questionApi.update(submitForm) : await questionApi.create(submitForm)
     if (res.code === 200) {
       ElMessage.success('操作成功')
       dialogVisible.value = false
@@ -229,9 +325,16 @@ const handleDelete = async (row) => {
   }
 }
 
+watch(() => form.optionCount, (newVal) => {
+  if (['SINGLE_CHOICE', 'MULTIPLE_CHOICE'].includes(form.type)) {
+    initOptions(newVal)
+  }
+})
+
 onMounted(() => {
   loadData()
   loadSubjects()
+  initOptions(4)
 })
 </script>
 
@@ -240,10 +343,127 @@ onMounted(() => {
   max-width: 1400px;
 }
 
+.page-header {
+  margin-bottom: 24px;
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+  }
+  
+  p {
+    font-size: 14px;
+    color: #666;
+  }
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+}
+
 .toolbar {
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+}
+
+.blank-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  
+  .hint {
+    font-size: 12px;
+    color: #999;
+  }
+}
+
+:deep(.el-button--danger) {
+  background: linear-gradient(135deg, #f25858 0%, #f85151 100%);
+  border: none;
+  color: #fff;
+  
+  &:hover, &:focus {
+    background: linear-gradient(135deg, #f25858 0%, #dc2626 100%);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  }
+}
+
+:deep(.el-button--danger.el-button--link) {
+  background: transparent;
+  color: #dc2626;
+  
+  &:hover {
+    color: #ef4444;
+    text-decoration: underline;
+  }
+}
+
+:deep(.el-select__wrapper) {
+  border-radius: 8px;
+}
+
+:deep(.el-input__wrapper) {
+  border-radius: 8px;
+}
+
+:deep(.el-table) {
+  --el-table-header-text-color: #0f172a;
+  --el-table-row-hover-bg-color: rgba(220, 38, 38, 0.08);
+}
+
+:deep(.el-tag) {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  border: none;
+  color: #fff;
+}
+
+:deep(.el-dialog__header) {
+  background: linear-gradient(135deg, #ec6767 0%, #c05151 100%);
+  padding: 16px 20px;
+  
+  .el-dialog__title {
+    color: #fff;
+    font-weight: 600;
+  }
+  
+  .el-dialog__close {
+    color: #fff;
+    
+    &:hover {
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+}
+
+:deep(.el-form-item__label) {
+  color: #333;
+  font-weight: 500;
+}
+
+:deep(.el-radio__inner) {
+  border-color: #dc2626;
+  
+  &:checked {
+    background: linear-gradient(135deg, #dc2626 0%, #ed4a4a 100%);
+    border-color: transparent;
+  }
+}
+
+:deep(.el-select-dropdown__item.selected) {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+
+:deep(.el-pagination.is-background .el-pager li:not(.disabled).active) {
+  background: linear-gradient(135deg, #dc2626 0%, #ec4f4f 100%);
+  border-color: transparent;
 }
 </style>

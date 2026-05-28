@@ -81,6 +81,7 @@ public class ExamExamRecordController {
         result.put("questions", examPaperService.getQuestions(paper));
         result.put("duration", exam.getDuration());
         result.put("totalScore", exam.getTotalScore());
+        result.put("examConfig", exam.getAntiCheatConfig());
 
         return R.ok(result);
     }
@@ -116,7 +117,7 @@ public class ExamExamRecordController {
         return R.ok();
     }
 
-    @PostMapping("/submit")
+    @PostMapping("/submit/{recordId}")
     public R<Void> submit(@PathVariable Long recordId) {
         examExamRecordService.submitExam(recordId);
         return R.ok();
@@ -132,6 +133,14 @@ public class ExamExamRecordController {
             examExamRecordService.submitExam(recordId);
             return R.error("切屏次数过多，已自动交卷");
         }
+        return R.ok();
+    }
+
+    @PostMapping("/report-leave")
+    public R<Void> reportLeave(@RequestBody Map<String, Object> params) {
+        Long recordId = Long.valueOf(params.get("recordId").toString());
+        Integer leaveCount = Integer.valueOf(params.get("leaveCount").toString());
+        examExamRecordService.updateLeaveCount(recordId, leaveCount);
         return R.ok();
     }
 

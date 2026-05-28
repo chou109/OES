@@ -2,12 +2,15 @@ package com.oes.controller;
 
 import com.oes.common.base.PageResult;
 import com.oes.common.base.R;
+import com.oes.dto.PaperRequestDTO;
 import com.oes.entity.ExamPaper;
 import com.oes.entity.ExamQuestion;
 import com.oes.service.ExamPaperService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/papers")
@@ -44,16 +47,30 @@ public class ExamPaperController {
     }
 
     @PostMapping
-    public R<Void> create(@RequestBody ExamPaper paper,
-                           @RequestParam(required = false) List<Long> questionIds) {
-        examPaperService.createPaper(paper, questionIds);
+    public R<Void> create(@RequestBody PaperRequestDTO requestDTO) {
+        Map<Long, Integer> scoreMap = null;
+        if (requestDTO.getQuestionScores() != null && !requestDTO.getQuestionScores().isEmpty()) {
+            scoreMap = requestDTO.getQuestionScores().stream()
+                .collect(Collectors.toMap(
+                    m -> Long.valueOf(m.get("questionId").toString()),
+                    m -> Integer.valueOf(m.get("score").toString())
+                ));
+        }
+        examPaperService.createPaper(requestDTO.getPaper(), requestDTO.getQuestionIds(), scoreMap);
         return R.ok();
     }
 
     @PutMapping
-    public R<Void> update(@RequestBody ExamPaper paper,
-                          @RequestParam(required = false) List<Long> questionIds) {
-        examPaperService.updatePaper(paper, questionIds);
+    public R<Void> update(@RequestBody PaperRequestDTO requestDTO) {
+        Map<Long, Integer> scoreMap = null;
+        if (requestDTO.getQuestionScores() != null && !requestDTO.getQuestionScores().isEmpty()) {
+            scoreMap = requestDTO.getQuestionScores().stream()
+                .collect(Collectors.toMap(
+                    m -> Long.valueOf(m.get("questionId").toString()),
+                    m -> Integer.valueOf(m.get("score").toString())
+                ));
+        }
+        examPaperService.updatePaper(requestDTO.getPaper(), requestDTO.getQuestionIds(), scoreMap);
         return R.ok();
     }
 

@@ -93,7 +93,7 @@ const routes = [
       {
         path: 'student/examing/:id',
         name: 'StudentExam',
-        component: () => import('../views/student/Exam.vue'),
+        component: () => import('../views/student/ExamTake.vue'),
         meta: { title: '在线考试', roles: ['STUDENT'] }
       },
       {

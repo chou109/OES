@@ -70,6 +70,7 @@ public class ExamExamRecordService extends ServiceImpl<ExamExamRecordMapper, Exa
         record.setQuestionOrder(questionOrder);
         record.setOptionOrder(optionOrder);
         record.setScreenSwitchCount(0);
+        record.setLeaveCount(0);
         record.setIsSuspicious(0);
         record.setIsAutoSubmit(0);
         record.setStatus("ONGOING");
@@ -183,6 +184,14 @@ public class ExamExamRecordService extends ServiceImpl<ExamExamRecordMapper, Exa
             if (record.getScreenSwitchCount() >= 3) {
                 record.setIsSuspicious(1);
             }
+            updateById(record);
+        }
+    }
+
+    public void updateLeaveCount(Long recordId, Integer leaveCount) {
+        ExamExamRecord record = getById(recordId);
+        if (record != null) {
+            record.setLeaveCount(leaveCount);
             updateById(record);
         }
     }

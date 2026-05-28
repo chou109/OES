@@ -49,6 +49,7 @@ com\oes\mapper\ExamKnowledgePointMapper.class
 com\oes\mapper\ExamExamMapper.class
 com\oes\controller\ExamSubjectController.class
 com\oes\entity\SysClassMessage.class
+com\oes\dto\PaperRequestDTO.class
 com\oes\entity\ExamAnswer.class
 com\oes\config\MybatisPlusConfig.class
 com\oes\config\SecurityConfig.class

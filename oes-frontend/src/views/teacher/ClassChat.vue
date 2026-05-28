@@ -9,7 +9,29 @@
         <span class="member-count">{{ memberCount }} 名成员</span>
       </div>
       <div class="header-right">
-        <el-button link @click="showMembers = !showMembers">
+        <el-dropdown trigger="click" @command="handleDropdownCommand">
+          <el-button type="danger">
+            <el-icon><Plus /></el-icon>
+            发布
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="exam">
+                <el-icon><Document /></el-icon>
+                发布考试
+              </el-dropdown-item>
+              <el-dropdown-item command="homework" disabled>
+                <el-icon><Notebook /></el-icon>
+                发布作业（暂未开放）
+              </el-dropdown-item>
+              <el-dropdown-item command="notice" disabled>
+                <el-icon><Bell /></el-icon>
+                发布公告（暂未开放）
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+        <el-button link @click="showMembers = !showMembers" style="margin-left: 8px">
           <el-icon><User /></el-icon>
           成员
         </el-button>
@@ -86,7 +108,7 @@
 import { ref, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, User, Close } from '@element-plus/icons-vue'
+import { ArrowLeft, User, Close, Plus, Document, Notebook, Bell } from '@element-plus/icons-vue'
 import { useUserStore } from '../../store'
 import { classApi } from '../../utils/api'
 
@@ -101,6 +123,16 @@ const members = ref([])
 const inputMessage = ref('')
 const showMembers = ref(false)
 const messageList = ref(null)
+
+const handleDropdownCommand = (command) => {
+  if (command === 'exam') {
+    router.push({ path: '/teacher/exam/manage', query: { classId: classId.value } })
+  } else if (command === 'homework') {
+    ElMessage.info('作业功能暂未开放')
+  } else if (command === 'notice') {
+    ElMessage.info('公告功能暂未开放')
+  }
+}
 
 const isSelfMessage = (senderId) => {
   const userId = userStore.userInfo?.userId || localStorage.getItem('userId')
