@@ -118,6 +118,11 @@
           <el-input-number v-model="form.config.maxLeaveCount" :min="1" :max="10" style="width: 100%" />
           <span style="margin-left: 8px; color: #909399">次，超过将自动收卷</span>
         </el-form-item>
+        <el-divider>考后设置</el-divider>
+        <el-form-item label="允许考后查看试卷">
+          <el-switch v-model="form.config.allowViewAfterExam" />
+          <span style="margin-left: 8px; color: #909399">开启后学生交卷即可查看试卷和得分</span>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -211,7 +216,7 @@ const form = reactive({
   duration: 120,
   totalScore: 100,
   passRate: 60,
-  config: { shuffleQuestions: true, shuffleOptions: true, leaveDetection: false, maxLeaveCount: 3 }
+  config: { shuffleQuestions: true, shuffleOptions: true, leaveDetection: false, maxLeaveCount: 3, allowViewAfterExam: true }
 })
 
 const rules = {
@@ -280,7 +285,7 @@ const onPaperChange = (paperId) => {
 
 const handleCreate = () => {
   const queryClassId = route.query.classId
-  Object.assign(form, { title: '', paperId: null, subjectId: null, classIds: queryClassId ? [parseInt(queryClassId)] : [], startTime: null, endTime: null, duration: 120, totalScore: 100, passRate: 60, config: { shuffleQuestions: true, shuffleOptions: true, leaveDetection: false, maxLeaveCount: 3 } })
+  Object.assign(form, { title: '', paperId: null, subjectId: null, classIds: queryClassId ? [parseInt(queryClassId)] : [], startTime: null, endTime: null, duration: 120, totalScore: 100, passRate: 60, config: { shuffleQuestions: true, shuffleOptions: true, leaveDetection: false, maxLeaveCount: 3, allowViewAfterExam: true } })
   dialogVisible.value = true
 }
 

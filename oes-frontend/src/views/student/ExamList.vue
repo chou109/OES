@@ -32,7 +32,7 @@
             <el-button 
               :type="item.studentStatus === 'SUBMITTED' ? 'success' : 'danger'" 
               @click="handleJoin(item.exam)" 
-              :disabled="!canJoin(item)"
+              :disabled="!canJoin(item) && !canView(item)"
             >
               {{ getButtonText(item) }}
             </el-button>
@@ -75,8 +75,12 @@ const canJoin = (item) => {
   return item.exam.status === 'ONGOING' && item.studentStatus !== 'SUBMITTED'
 }
 
+const canView = (item) => {
+  return item.studentStatus === 'SUBMITTED'
+}
+
 const getButtonText = (item) => {
-  if (item.studentStatus === 'SUBMITTED') return '已交卷'
+  if (item.studentStatus === 'SUBMITTED') return '查看详情'
   if (item.exam.status === 'ONGOING') return '进入考试'
   return '等待开始'
 }

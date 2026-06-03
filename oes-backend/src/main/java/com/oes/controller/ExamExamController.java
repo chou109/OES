@@ -4,7 +4,7 @@ import com.oes.common.base.PageResult;
 import com.oes.common.base.R;
 import com.oes.entity.ExamExam;
 import com.oes.entity.ExamStatistics;
-import com.oes.common.JwtUtils;
+import com.oes.config.JwtUtils;
 import com.oes.service.ExamExamService;
 import com.oes.service.SysLogService;
 import javax.servlet.http.HttpServletRequest;

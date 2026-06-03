@@ -67,6 +67,9 @@ public class ExamExamService extends ServiceImpl<ExamExamMapper, ExamExam> {
             
             if (studentId != null) {
                 ExamExamRecord record = examExamRecordService.getByExamAndStudent(exam.getId(), studentId);
+                System.out.println("========== studentPageWithStatus debug ==========");
+                System.out.println("examId: " + exam.getId() + ", studentId: " + studentId);
+                System.out.println("record: " + (record != null ? record.getId() + ", status: " + record.getStatus() : "null"));
                 if (record != null && "SUBMITTED".equals(record.getStatus())) {
                     map.put("studentStatus", "SUBMITTED");
                 } else if (record != null && "ONGOING".equals(record.getStatus())) {
@@ -75,6 +78,7 @@ public class ExamExamService extends ServiceImpl<ExamExamMapper, ExamExam> {
                     map.put("studentStatus", "NOT_STARTED");
                 }
             } else {
+                System.out.println("========== studentId is null ==========");
                 map.put("studentStatus", "UNKNOWN");
             }
             records.add(map);

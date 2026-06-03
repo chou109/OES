@@ -132,14 +132,26 @@ public class ExamExamRecordService extends ServiceImpl<ExamExamRecordMapper, Exa
             if (question == null) continue;
 
             if (isObjective(question.getType())) {
-                boolean correct = gradeAnswer(question, answer);
-                answer.setIsCorrect(correct ?1 : 0);
-                answer.setAutoScore(correct ? question.getScore() : 0);
+                if ("MULTIPLE_CHOICE".equals(question.getType())) {
+                    Integer score = gradeMultipleChoice(question, answer);
+                    answer.setIsCorrect(score >= question.getScore() ? 1 : (score > 0 ? 0 : 0));
+                    answer.setAutoScore(score);
 
-                if (!correct) {
-                    saveWrongQuestion(record.getStudentId(), question, answer.getAnswer(), record.getExamId());
+                    if (score < question.getScore()) {
+                        saveWrongQuestion(record.getStudentId(), question, answer.getAnswer(), record.getExamId());
+                    } else {
+                        examQuestionService.incrementCorrectCount(question.getId());
+                    }
                 } else {
-                    examQuestionService.incrementCorrectCount(question.getId());
+                    boolean correct = gradeAnswer(question, answer);
+                    answer.setIsCorrect(correct ? 1 : 0);
+                    answer.setAutoScore(correct ? question.getScore() : 0);
+
+                    if (!correct) {
+                        saveWrongQuestion(record.getStudentId(), question, answer.getAnswer(), record.getExamId());
+                    } else {
+                        examQuestionService.incrementCorrectCount(question.getId());
+                    }
                 }
             }
             examAnswerMapper.updateById(answer);
@@ -164,6 +176,44 @@ public class ExamExamRecordService extends ServiceImpl<ExamExamRecordMapper, Exa
         String correct = question.getAnswer().trim().toUpperCase();
         String student = answer.getAnswer().trim().toUpperCase();
         return correct.equals(student);
+    }
+
+    private Integer gradeMultipleChoice(ExamQuestion question, ExamAnswer answer) {
+        if (question.getAnswer() == null || answer.getAnswer() == null) {
+            return 0;
+        }
+        String correct = question.getAnswer().trim().toUpperCase();
+        String student = answer.getAnswer().trim().toUpperCase();
+
+        java.util.Set<String> correctSet = new java.util.HashSet<>(java.util.Arrays.asList(correct.split(",")));
+        java.util.Set<String> studentSet = new java.util.HashSet<>(java.util.Arrays.asList(student.split(",")));
+
+        boolean hasWrongChoice = false;
+        boolean hasAllCorrect = true;
+
+        for (String choice : studentSet) {
+            if (!correctSet.contains(choice)) {
+                hasWrongChoice = true;
+                break;
+            }
+        }
+
+        if (hasWrongChoice) {
+            return 0;
+        }
+
+        for (String choice : correctSet) {
+            if (!studentSet.contains(choice)) {
+                hasAllCorrect = false;
+                break;
+            }
+        }
+
+        if (hasAllCorrect) {
+            return question.getScore();
+        } else {
+            return question.getScore() * 3 / 5;
+        }
     }
 
     private void saveWrongQuestion(Long studentId, ExamQuestion question, String wrongAnswer, Long examId) {

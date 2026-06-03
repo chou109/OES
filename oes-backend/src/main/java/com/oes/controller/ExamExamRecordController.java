@@ -1,5 +1,7 @@
 package com.oes.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oes.common.base.PageResult;
 import com.oes.common.base.R;
 import com.oes.config.JwtUtils;
@@ -19,17 +21,21 @@ public class ExamExamRecordController {
     private final ExamExamRecordService examExamRecordService;
     private final ExamPaperService examPaperService;
     private final ExamExamService examExamService;
+    private final ExamQuestionService examQuestionService;
     private final ExamWrongQuestionMapper examWrongQuestionMapper;
     private final JwtUtils jwtUtils;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ExamExamRecordController(ExamExamRecordService examExamRecordService,
                                     ExamPaperService examPaperService,
                                     ExamExamService examExamService,
+                                    ExamQuestionService examQuestionService,
                                     ExamWrongQuestionMapper examWrongQuestionMapper,
                                     JwtUtils jwtUtils) {
         this.examExamRecordService = examExamRecordService;
         this.examPaperService = examPaperService;
         this.examExamService = examExamService;
+        this.examQuestionService = examQuestionService;
         this.examWrongQuestionMapper = examWrongQuestionMapper;
         this.jwtUtils = jwtUtils;
     }
@@ -61,9 +67,77 @@ public class ExamExamRecordController {
         }
 
         ExamExamRecord existRecord = examExamRecordService.getByExamAndStudent(examId, studentId);
-        if (existRecord != null && !"NOT_STARTED".equals(existRecord.getStatus())) {
-            return R.error("您已参加过此考试");
-        }
+            if (existRecord != null && "ONGOING".equals(existRecord.getStatus())) {
+                // 允许继续考试
+                Map<String, Object> result = new HashMap<>();
+                result.put("recordId", existRecord.getId());
+                result.put("record", existRecord);
+                result.put("exam", exam);
+                result.put("paper", examPaperService.getById(existRecord.getPaperId()));
+                result.put("questions", examPaperService.getQuestions(examPaperService.getById(existRecord.getPaperId())));
+                result.put("duration", exam.getDuration());
+                result.put("totalScore", exam.getTotalScore());
+                result.put("examConfig", exam.getAntiCheatConfig());
+                return R.ok(result);
+            } else if (existRecord != null && "SUBMITTED".equals(existRecord.getStatus())) {
+                // 允许已提交的学生查看结果
+                Map<String, Object> result = new HashMap<>();
+                result.put("recordId", existRecord.getId());
+                result.put("record", existRecord);
+                result.put("exam", exam);
+                result.put("paper", examPaperService.getById(existRecord.getPaperId()));
+                result.put("questions", examPaperService.getQuestions(examPaperService.getById(existRecord.getPaperId())));
+                result.put("duration", exam.getDuration());
+                result.put("totalScore", exam.getTotalScore());
+                result.put("examConfig", exam.getAntiCheatConfig());
+
+                // 获取学生答案和评分信息
+                List<ExamAnswer> answers = examExamRecordService.getAnswersByRecordId(existRecord.getId());
+                Map<Long, Map<String, Object>> answerMap = new HashMap<>();
+                boolean hasSubjectiveUngraded = false;
+
+                for (ExamAnswer answer : answers) {
+                    Map<String, Object> answerInfo = new HashMap<>();
+                    answerInfo.put("answer", answer.getAnswer());
+                    answerInfo.put("isCorrect", answer.getIsCorrect());
+                    answerInfo.put("score", answer.getAutoScore());
+
+                    ExamQuestion question = examQuestionService.getById(answer.getQuestionId());
+                    if (question != null) {
+                        answerInfo.put("correctAnswer", question.getAnswer());
+                        // 判断是否为主观题且未评分
+                        if (isSubjective(question.getType()) && (answer.getAutoScore() == null || answer.getAutoScore() == 0)) {
+                            hasSubjectiveUngraded = true;
+                        }
+                    }
+                    answerMap.put(answer.getQuestionId(), answerInfo);
+                }
+                result.put("answerMap", answerMap);
+                result.put("hasSubjectiveUngraded", hasSubjectiveUngraded);
+
+                // 判断是否允许查看试卷
+                boolean allowView = exam.getEndTime().isBefore(java.time.LocalDateTime.now());
+                if (!allowView && exam.getAntiCheatConfig() != null) {
+                    try {
+                        Map<String, Object> config = objectMapper.readValue(exam.getAntiCheatConfig(), Map.class);
+                        if (config != null && config.containsKey("allowViewAfterExam")) {
+                            allowView = Boolean.TRUE.equals(config.get("allowViewAfterExam"));
+                        }
+                    } catch (Exception e) {
+                        allowView = false;
+                    }
+                }
+                // 如果有主观题未评分，也不能查看详细答案
+                if (hasSubjectiveUngraded) {
+                    allowView = false;
+                }
+                result.put("canViewPaper", allowView);
+                result.put("studentScore", existRecord.getScore());
+
+                return R.ok(result);
+            } else if (existRecord != null) {
+                return R.error("您已参加过此考试");
+            }
 
         ExamPaper paper = examPaperService.getById(exam.getPaperId());
         if (paper == null) {
@@ -222,5 +296,11 @@ public class ExamExamRecordController {
         stats.put("averageScore", averageScore != null ? Math.round(averageScore * 10) / 10.0 : 0);
 
         return R.ok(stats);
+    }
+
+    private boolean isSubjective(String type) {
+        return "FILL_BLANK".equals(type) ||
+               "ESSAY".equals(type) ||
+               "PROGRAMMING".equals(type);
     }
 }
