@@ -52,54 +52,98 @@ public class ExamExamService extends ServiceImpl<ExamExamMapper, ExamExam> {
     }
 
     public PageResult<Map<String, Object>> studentPageWithStatus(Integer current, Integer size, Long studentId, String keyword, String status) {
+        System.out.println("========== 学生考试列表查询调试 ==========");
+        System.out.println("学生ID: " + studentId);
+        System.out.println("分页: current=" + current + ", size=" + size);
+        System.out.println("关键词: " + keyword);
+        System.out.println("状态筛选: " + status);
+        
+        // 获取学生的考试记录（考试发布时会为每个学生创建记录）
+        List<ExamExamRecord> studentRecords = examExamRecordService.getByStudentId(studentId);
+        System.out.println("该学生的考试记录数量: " + (studentRecords != null ? studentRecords.size() : 0));
+        if (studentRecords != null) {
+            for (ExamExamRecord record : studentRecords) {
+                System.out.println("  考试记录: examId=" + record.getExamId() + ", status=" + record.getStatus());
+            }
+        }
+        
+        if (studentRecords == null || studentRecords.isEmpty()) {
+            System.out.println("没有考试记录，返回空列表");
+            return new PageResult<>(0L, new ArrayList<>(), (long) current, (long) size);
+        }
+        
+        List<Long> examIds = studentRecords.stream().map(ExamExamRecord::getExamId).collect(Collectors.toList());
+        System.out.println("学生的考试IDs: " + examIds);
+        
         Page<ExamExam> page = new Page<>(current, size);
         LambdaQueryWrapper<ExamExam> wrapper = new LambdaQueryWrapper<>();
         
+        // 只查询学生有考试记录的考试
+        wrapper.in(ExamExam::getId, examIds);
+        
         // 状态筛选
         if (StringUtils.hasText(status)) {
+            System.out.println("应用状态筛选: " + status);
             wrapper.eq(ExamExam::getStatus, status);
         } else {
-            wrapper.eq(ExamExam::getStatus, "ONGOING");
-            wrapper.or(w -> w.eq(ExamExam::getStatus, "PENDING")
-                    .gt(ExamExam::getEndTime, LocalDateTime.now()));
+            System.out.println("没有指定状态筛选，显示所有状态");
         }
         
         // 关键词搜索
         if (StringUtils.hasText(keyword)) {
+            System.out.println("应用关键词搜索: " + keyword);
             wrapper.like(ExamExam::getTitle, keyword);
         }
         
-        wrapper.orderByAsc(ExamExam::getStartTime);
+        wrapper.orderByDesc(ExamExam::getCreateTime);
         IPage<ExamExam> result = page(page, wrapper);
         
-        List<Map<String, Object>> records = new ArrayList<>();
+        System.out.println("查询到的考试数量: " + result.getRecords().size());
+        for (ExamExam exam : result.getRecords()) {
+            System.out.println("  考试: id=" + exam.getId() + ", title=" + exam.getTitle() + ", status=" + exam.getStatus());
+        }
+        
+        // 使用Map提高查找效率
+        Map<Long, ExamExamRecord> recordMap = studentRecords.stream()
+                .collect(Collectors.toMap(ExamExamRecord::getExamId, r -> r));
+        
+        List<Map<String, Object>> resultList = new ArrayList<>();
         for (ExamExam exam : result.getRecords()) {
             Map<String, Object> map = new HashMap<>();
             map.put("exam", exam);
             
-            if (studentId != null) {
-                ExamExamRecord record = examExamRecordService.getByExamAndStudent(exam.getId(), studentId);
-                if (record != null && "SUBMITTED".equals(record.getStatus())) {
+            ExamExamRecord record = recordMap.get(exam.getId());
+            if (record != null) {
+                if ("SUBMITTED".equals(record.getStatus())) {
                     map.put("studentStatus", "SUBMITTED");
-                } else if (record != null && "AUTO_SUBMITTED".equals(record.getStatus())) {
+                } else if ("AUTO_SUBMITTED".equals(record.getStatus())) {
                     map.put("studentStatus", "AUTO_SUBMITTED");
-                } else if (record != null && "ONGOING".equals(record.getStatus())) {
+                } else if ("ONGOING".equals(record.getStatus())) {
                     map.put("studentStatus", "ONGOING");
                 } else {
                     map.put("studentStatus", "NOT_STARTED");
                 }
             } else {
-                map.put("studentStatus", "UNKNOWN");
+                map.put("studentStatus", "NOT_STARTED");
             }
-            records.add(map);
+            resultList.add(map);
         }
         
-        return new PageResult<>(result.getTotal(), records, (long) current, (long) size);
+        System.out.println("返回给前端的考试数量: " + resultList.size());
+        System.out.println("========== 查询完成 ==========");
+        
+        return new PageResult<>(result.getTotal(), resultList, (long) current, (long) size);
     }
 
+    @Transactional
     public boolean createExam(ExamExam exam) {
         exam.setStatus("PENDING");
-        return save(exam);
+        boolean created = save(exam);
+        if (created) {
+            // 创建成功后自动发布考试（为学生创建考试记录）
+            publishExam(exam.getId());
+        }
+        return created;
     }
 
     public boolean updateExam(ExamExam exam) {
@@ -113,20 +157,34 @@ public class ExamExamService extends ServiceImpl<ExamExamMapper, ExamExam> {
             throw new RuntimeException("考试不存在");
         }
         
+        System.out.println("========== 发布考试调试 ==========");
+        System.out.println("考试ID: " + examId);
+        System.out.println("考试标题: " + exam.getTitle());
+        System.out.println("班级IDs: " + exam.getClassIds());
+        
         List<Long> classIds = getClassIds(exam);
+        System.out.println("解析后的班级ID列表: " + classIds);
+        
         if (classIds.isEmpty()) {
             throw new RuntimeException("请先选择发布班级");
         }
         
         Set<Long> studentIds = new HashSet<>();
         for (Long classId : classIds) {
+            System.out.println("查询班级 " + classId + " 的成员...");
             List<SysClassMember> members = sysClassMemberService.getMembersByClassId(classId);
-            for (SysClassMember member : members) {
-                if ("STUDENT".equals(member.getRole()) || "MEMBER".equals(member.getRole())) {
-                    studentIds.add(member.getUserId());
+            System.out.println("班级 " + classId + " 成员数量: " + (members != null ? members.size() : 0));
+            if (members != null) {
+                for (SysClassMember member : members) {
+                    System.out.println("  成员: userId=" + member.getUserId() + ", role=" + member.getRole());
+                    if ("STUDENT".equals(member.getRole()) || "MEMBER".equals(member.getRole())) {
+                        studentIds.add(member.getUserId());
+                    }
                 }
             }
         }
+        
+        System.out.println("找到的学生IDs: " + studentIds);
         
         if (studentIds.isEmpty()) {
             throw new RuntimeException("所选班级没有学生");
@@ -135,8 +193,10 @@ public class ExamExamService extends ServiceImpl<ExamExamMapper, ExamExam> {
         exam.setStudentIds(studentIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
         exam.setStatus("PENDING");
         boolean updated = updateById(exam);
+        System.out.println("更新考试结果: " + updated);
         
         if (updated) {
+            int createdCount = 0;
             for (Long studentId : studentIds) {
                 ExamExamRecord existingRecord = examExamRecordService.getByExamAndStudent(examId, studentId);
                 if (existingRecord == null) {
@@ -149,9 +209,15 @@ public class ExamExamService extends ServiceImpl<ExamExamMapper, ExamExam> {
                     record.setIsSuspicious(0);
                     record.setIsAutoSubmit(0);
                     examExamRecordService.save(record);
+                    createdCount++;
+                    System.out.println("为学生 " + studentId + " 创建考试记录成功");
+                } else {
+                    System.out.println("学生 " + studentId + " 已有考试记录，跳过");
                 }
             }
+            System.out.println("共创建考试记录: " + createdCount + " 条");
         }
+        System.out.println("========== 发布考试完成 ==========");
         
         return updated;
     }
@@ -222,5 +288,10 @@ public class ExamExamService extends ServiceImpl<ExamExamMapper, ExamExam> {
             stats.setSuspiciousCount(0);
         }
         return stats;
+    }
+
+    public Long countParticipation() {
+        return examExamRecordService.count(new LambdaQueryWrapper<ExamExamRecord>()
+                .in(ExamExamRecord::getStatus, Arrays.asList("SUBMITTED", "AUTO_SUBMITTED")));
     }
 }

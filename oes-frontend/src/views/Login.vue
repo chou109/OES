@@ -82,7 +82,7 @@
           
           <div class="action-buttons">
             <el-button type="danger" plain @click="showAdminLogin = true">管理员登录</el-button>
-            <el-button type="primary" plain @click="showRegister = true">去注册</el-button>
+            <el-button type="primary" plain @click="openRegister">去注册</el-button>
           </div>
         </div>
         
@@ -175,6 +175,20 @@
                 show-password
               />
             </el-form-item>
+            <el-form-item prop="departmentId">
+              <el-select
+                v-model="registerForm.departmentId"
+                placeholder="请选择学院"
+                size="large"
+              >
+                <el-option
+                  v-for="dept in departments"
+                  :key="dept.id"
+                  :label="dept.name"
+                  :value="dept.id"
+                />
+              </el-select>
+            </el-form-item>
             <el-form-item>
               <el-button type="danger" size="large" :loading="registerLoading" native-type="submit" class="login-btn">
                 注册
@@ -204,7 +218,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, UserFilled, Lock, Check } from '@element-plus/icons-vue'
 import { useUserStore } from '../store'
-import { authApi } from '../utils/api'
+import { authApi, departmentApi } from '../utils/api'
 
 const router = useRouter()
 const formRef = ref()
@@ -222,12 +236,14 @@ const registerForm = reactive({
   username: '',
   password: '',
   confirmPassword: '',
-  role: 'STUDENT'
+  role: 'STUDENT',
+  departmentId: ''
 })
 
 const loginType = ref('student')
 const showAdminLogin = ref(false)
 const showRegister = ref(false)
+const departments = ref([])
 
 const validateConfirmPassword = (rule, value, callback) => {
   if (value === '') {
@@ -294,6 +310,17 @@ const handleLogin = async () => {
   }
 }
 
+const loadDepartments = async () => {
+  try {
+    const res = await departmentApi.list()
+    if (res.code === 200) {
+      departments.value = res.data
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 const handleRegister = async () => {
   const valid = await registerFormRef.value.validate().catch(() => false)
   if (!valid) return
@@ -303,7 +330,8 @@ const handleRegister = async () => {
     await authApi.register({
       username: registerForm.username,
       password: registerForm.password,
-      role: registerForm.role
+      role: registerForm.role,
+      departmentId: registerForm.departmentId ? Number(registerForm.departmentId) : null
     })
     
     ElMessage({
@@ -328,6 +356,12 @@ const backToLogin = () => {
   registerForm.password = ''
   registerForm.confirmPassword = ''
   registerForm.role = 'STUDENT'
+  registerForm.departmentId = ''
+}
+
+const openRegister = () => {
+  showRegister.value = true
+  loadDepartments()
 }
 
 // 动态波形连接器

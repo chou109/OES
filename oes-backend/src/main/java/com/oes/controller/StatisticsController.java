@@ -59,22 +59,31 @@ public class StatisticsController {
         Long totalExams = examExamService.count();
         Long classCount = sysClassService.count();
         Long departmentCount = sysDepartmentService.count();
+        Long paperCount = examPaperService.count();
+        Long questionCount = examQuestionService.count();
 
         // 考试状态统计
         Long pendingExams = examExamService.countByStatus("PENDING");
         Long ongoingExams = examExamService.countByStatus("ONGOING");
         Long finishedExams = examExamService.countByStatus("FINISHED");
 
+        // 参与人次（已提交的考试记录数）
+        Long participationCount = examExamService.countParticipation();
+
         data.put("studentCount", studentCount);
         data.put("teacherCount", teacherCount);
         data.put("adminCount", adminCount);
         data.put("totalUsers", studentCount + teacherCount + adminCount);
         data.put("totalExams", totalExams);
+        data.put("examCount", totalExams);
         data.put("classCount", classCount);
         data.put("departmentCount", departmentCount);
+        data.put("paperCount", paperCount);
+        data.put("questionCount", questionCount);
         data.put("pendingExams", pendingExams);
         data.put("ongoingExams", ongoingExams);
         data.put("finishedExams", finishedExams);
+        data.put("participationCount", participationCount);
 
         return R.ok(data);
     }

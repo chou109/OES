@@ -23,4 +23,5 @@ public class ExamExam extends BaseEntity {
     private String status;
     private String antiCheatConfig;
     private Integer autoSubmit;
+    private Integer allowViewAfterExam;
 }

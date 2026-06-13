@@ -31,35 +31,40 @@ public class AuthController {
 
     @PostMapping("/login")
     public R<Map<String, Object>> login(@RequestBody SysUser user, HttpServletRequest request) {
-        SysUser dbUser = sysUserService.getByUsername(user.getUsername());
-        if (dbUser == null) {
-            return R.error("用户不存在");
-        }
-        if (dbUser.getStatus() == 0) {
-            return R.error("用户已被禁用");
-        }
-        if (!passwordEncoder.matches(user.getPassword(), dbUser.getPassword())) {
-            return R.error("密码错误");
-        }
-
-        String token = jwtUtils.generateToken(dbUser.getId(), dbUser.getUsername(), dbUser.getRole());
-
         try {
-            String ip = request.getRemoteAddr();
-            sysLogService.saveLog(dbUser.getUsername(), "用户登录", "POST /api/auth/login", 
-                    "{\"username\":\"" + user.getUsername() + "\"}", ip);
+            SysUser dbUser = sysUserService.getByUsername(user.getUsername());
+            if (dbUser == null) {
+                return R.error("用户不存在");
+            }
+            if (dbUser.getStatus() == 0) {
+                return R.error("用户已被禁用");
+            }
+            if (!passwordEncoder.matches(user.getPassword(), dbUser.getPassword())) {
+                return R.error("密码错误");
+            }
+
+            String token = jwtUtils.generateToken(dbUser.getId(), dbUser.getUsername(), dbUser.getRole());
+
+            try {
+                String ip = request.getRemoteAddr();
+                sysLogService.saveLog(dbUser.getUsername(), "用户登录", "POST /api/auth/login", 
+                        "{\"username\":\"" + user.getUsername() + "\"}", ip);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            Map<String, Object> data = new java.util.HashMap<>();
+            data.put("token", token);
+            data.put("userId", dbUser.getId());
+            data.put("username", dbUser.getUsername());
+            data.put("realName", dbUser.getRealName() != null ? dbUser.getRealName() : "");
+            data.put("role", dbUser.getRole());
+            data.put("avatar", dbUser.getAvatar() != null ? dbUser.getAvatar() : "");
+            return R.ok(data);
         } catch (Exception e) {
             e.printStackTrace();
+            return R.error("登录失败: " + e.getMessage());
         }
-
-        Map<String, Object> data = new java.util.HashMap<>();
-        data.put("token", token);
-        data.put("userId", dbUser.getId());
-        data.put("username", dbUser.getUsername());
-        data.put("realName", dbUser.getRealName() != null ? dbUser.getRealName() : "");
-        data.put("role", dbUser.getRole());
-        data.put("avatar", dbUser.getAvatar() != null ? dbUser.getAvatar() : "");
-        return R.ok(data);
     }
 
     @GetMapping("/info")
@@ -86,15 +91,15 @@ public class AuthController {
             return R.unauthorized();
         }
 
-        Map<String, Object> data = Map.of(
-                "userId", user.getId(),
-                "username", user.getUsername(),
-                "realName", user.getRealName(),
-                "role", user.getRole(),
-                "avatar", user.getAvatar() != null ? user.getAvatar() : "",
-                "email", user.getEmail() != null ? user.getEmail() : "",
-                "phone", user.getPhone() != null ? user.getPhone() : ""
-        );
+        Map<String, Object> data = new java.util.HashMap<>();
+        data.put("userId", user.getId());
+        data.put("username", user.getUsername());
+        data.put("realName", user.getRealName() != null ? user.getRealName() : "");
+        data.put("role", user.getRole() != null ? user.getRole() : "");
+        data.put("avatar", user.getAvatar() != null ? user.getAvatar() : "");
+        data.put("email", user.getEmail() != null ? user.getEmail() : "");
+        data.put("phone", user.getPhone() != null ? user.getPhone() : "");
+        data.put("departmentId", user.getDepartmentId());
         return R.ok(data);
     }
 

@@ -122,25 +122,22 @@ public class ExamExamRecordController {
                 // 判断是否允许查看试卷
                 boolean allowView = false;
                 
-                // 检查防作弊配置中的 allowViewAfterExam 设置
-                if (exam.getAntiCheatConfig() != null) {
+                // 优先使用新的 allowViewAfterExam 字段
+                if (exam.getAllowViewAfterExam() != null) {
+                    allowView = exam.getAllowViewAfterExam() == 1;
+                } else if (exam.getAntiCheatConfig() != null) {
+                    // 兼容旧版本：从防作弊配置中读取
                     try {
                         Map<String, Object> config = objectMapper.readValue(exam.getAntiCheatConfig(), Map.class);
-                        if (config != null) {
-                            // 如果明确配置了 allowViewAfterExam，则按照配置来
-                            if (config.containsKey("allowViewAfterExam")) {
-                                allowView = Boolean.TRUE.equals(config.get("allowViewAfterExam"));
-                            } else {
-                                // 如果没有配置，默认不允许查看
-                                allowView = false;
-                            }
+                        if (config != null && config.containsKey("allowViewAfterExam")) {
+                            allowView = Boolean.TRUE.equals(config.get("allowViewAfterExam"));
                         }
                     } catch (Exception e) {
                         allowView = false;
                     }
                 } else {
-                    // 如果没有防作弊配置，检查考试是否已结束
-                    allowView = exam.getEndTime().isBefore(java.time.LocalDateTime.now());
+                    // 默认不允许查看
+                    allowView = false;
                 }
                 // 如果有主观题未评分，也不能查看详细答案
                 if (hasSubjectiveUngraded) {
@@ -149,6 +146,22 @@ public class ExamExamRecordController {
                 result.put("canViewPaper", allowView);
                 result.put("studentScore", existRecord.getScore());
 
+                return R.ok(result);
+            } else if (existRecord != null && "PENDING".equals(existRecord.getStatus())) {
+                // 允许状态为PENDING的学生开始考试，需要更新状态为ONGOING
+                existRecord.setStatus("ONGOING");
+                examExamRecordService.updateById(existRecord);
+                
+                Map<String, Object> result = new HashMap<>();
+                result.put("recordId", existRecord.getId());
+                result.put("record", existRecord);
+                result.put("exam", exam);
+                result.put("paper", examPaperService.getById(existRecord.getPaperId()));
+                result.put("questions", examPaperService.getQuestions(examPaperService.getById(existRecord.getPaperId())));
+                result.put("duration", exam.getDuration());
+                result.put("totalScore", exam.getTotalScore());
+                result.put("examConfig", exam.getAntiCheatConfig());
+                result.put("leaveCount", 0);
                 return R.ok(result);
             } else if (existRecord != null) {
                 return R.error("您已参加过此考试");

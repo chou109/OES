@@ -35,19 +35,21 @@ public class LogAspect {
 
     @Around("logPointcut()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
-        long startTime = System.currentTimeMillis();
-        
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
-        Log logAnnotation = method.getAnnotation(Log.class);
+        String methodName = signature.getName();
         
+        // 只记录增删改操作，不记录查询操作
+        if (!isDataModification(methodName)) {
+            return joinPoint.proceed();
+        }
+        
+        Log logAnnotation = method.getAnnotation(Log.class);
         String operation = logAnnotation.operation();
-        String target = logAnnotation.target();
         
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String ip = getClientIp(request);
         String username = getCurrentUsername(request);
-        String methodName = signature.getName();
         String params = getParams(joinPoint, signature);
         
         Object result = joinPoint.proceed();
@@ -65,6 +67,26 @@ public class LogAspect {
         }
         
         return result;
+    }
+    
+    private boolean isDataModification(String methodName) {
+        String lowerName = methodName.toLowerCase();
+        // 新增操作
+        if (lowerName.contains("create") || lowerName.contains("add") || 
+            lowerName.contains("insert") || lowerName.contains("save")) {
+            return true;
+        }
+        // 修改操作
+        if (lowerName.contains("update") || lowerName.contains("edit") || 
+            lowerName.contains("modify")) {
+            return true;
+        }
+        // 删除操作
+        if (lowerName.contains("delete") || lowerName.contains("remove") || 
+            lowerName.contains("del")) {
+            return true;
+        }
+        return false;
     }
 
     private String getClientIp(HttpServletRequest request) {

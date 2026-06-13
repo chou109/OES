@@ -7,7 +7,7 @@
     <!-- 统计卡片 -->
     <el-row :gutter="20" style="margin-bottom: 24px;">
       <el-col :span="6">
-        <div class="stat-card">
+        <div class="stat-card cursor-pointer" @click="router.push('/admin/users')">
           <div class="stat-icon blue">
             <el-icon><UserFilled /></el-icon>
           </div>
@@ -18,7 +18,7 @@
         </div>
       </el-col>
       <el-col :span="6">
-        <div class="stat-card">
+        <div class="stat-card cursor-pointer" @click="router.push('/admin/users?role=STUDENT')">
           <div class="stat-icon green">
             <el-icon><School /></el-icon>
           </div>
@@ -29,7 +29,7 @@
         </div>
       </el-col>
       <el-col :span="6">
-        <div class="stat-card">
+        <div class="stat-card cursor-pointer" @click="router.push('/admin/users?role=TEACHER')">
           <div class="stat-icon purple">
             <el-icon><User /></el-icon>
           </div>
@@ -40,9 +40,9 @@
         </div>
       </el-col>
       <el-col :span="6">
-        <div class="stat-card">
+        <div class="stat-card cursor-pointer" @click="router.push('/admin/departments')">
           <div class="stat-icon orange">
-            <el-icon><Building2 /></el-icon>
+            <el-icon><Folder /></el-icon>
           </div>
           <div class="stat-info">
             <p class="stat-value">{{ statistics.departmentCount }}</p>
@@ -56,6 +56,17 @@
       <el-col :span="6">
         <div class="stat-card">
           <div class="stat-icon red">
+            <el-icon><Document /></el-icon>
+          </div>
+          <div class="stat-info">
+            <p class="stat-value">{{ statistics.participationCount || 0 }}</p>
+            <p class="stat-label">参与人次</p>
+          </div>
+        </div>
+      </el-col>
+      <el-col :span="6">
+        <div class="stat-card cursor-pointer" @click="router.push('/admin/classes')">
+          <div class="stat-icon red">
             <el-icon><Folder /></el-icon>
           </div>
           <div class="stat-info">
@@ -65,7 +76,7 @@
         </div>
       </el-col>
       <el-col :span="6">
-        <div class="stat-card">
+        <div class="stat-card cursor-pointer" @click="router.push('/admin/papers')">
           <div class="stat-icon pink">
             <el-icon><Files /></el-icon>
           </div>
@@ -76,7 +87,7 @@
         </div>
       </el-col>
       <el-col :span="6">
-        <div class="stat-card">
+        <div class="stat-card cursor-pointer" @click="router.push('/admin/questions')">
           <div class="stat-icon cyan">
             <el-icon><EditPen /></el-icon>
           </div>
@@ -87,7 +98,7 @@
         </div>
       </el-col>
       <el-col :span="6">
-        <div class="stat-card">
+        <div class="stat-card cursor-pointer" @click="router.push('/admin/exams')">
           <div class="stat-icon yellow">
             <el-icon><Calendar /></el-icon>
           </div>
@@ -190,7 +201,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { UserFilled, School, User, Folder, Files, EditPen, Calendar, Document } from '@element-plus/icons-vue'
 import { statisticsApi } from '../../utils/api'
+
+const router = useRouter()
 
 const statistics = ref({
   totalUsers: 0,
@@ -204,7 +219,8 @@ const statistics = ref({
   examCount: 0,
   pendingExams: 0,
   ongoingExams: 0,
-  finishedExams: 0
+  finishedExams: 0,
+  participationCount: 0
 })
 
 const monthlyData = ref([
@@ -306,6 +322,16 @@ onMounted(() => {
   align-items: center;
   gap: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  
+  &.cursor-pointer {
+    cursor: pointer;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+  }
   
   .stat-icon {
     width: 56px;

@@ -109,7 +109,24 @@ public class ExamPaperService extends ServiceImpl<ExamPaperMapper, ExamPaper> {
         if (!StringUtils.hasText(paper.getQuestionIds())) {
             return new ArrayList<>();
         }
-        return Arrays.stream(paper.getQuestionIds().split(","))
+        
+        String questionIds = paper.getQuestionIds();
+        
+        // 尝试判断格式：如果是JSON数组格式
+        if (questionIds.startsWith("[")) {
+            try {
+                List<Map<String, Object>> list = objectMapper.readValue(questionIds, 
+                    new TypeReference<List<Map<String, Object>>>() {});
+                return list.stream()
+                        .map(item -> ((Number) item.get("questionId")).longValue())
+                        .collect(Collectors.toList());
+            } catch (JsonProcessingException e) {
+                // JSON解析失败，尝试旧格式
+            }
+        }
+        
+        // 旧格式：逗号分隔的ID字符串
+        return Arrays.stream(questionIds.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .map(Long::parseLong)

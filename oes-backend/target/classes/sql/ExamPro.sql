@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS `exam_exam` (
   `status` varchar(20) DEFAULT 'PENDING' COMMENT '状态: PENDING/ONGOING/FINISHED',
   `anti_cheat_config` text COMMENT '防作弊配置JSON',
   `auto_submit` tinyint(4) DEFAULT '1' COMMENT '是否自动提交: 0-否 1-是',
+  `allow_view_after_exam` tinyint(4) DEFAULT '0' COMMENT '是否允许考后查看试卷: 0-否 1-是',
   `deleted` tinyint(4) DEFAULT '0' COMMENT '删除标记',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -341,11 +342,13 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
   `avatar` varchar(255) DEFAULT NULL COMMENT '头像URL',
   `role` varchar(20) NOT NULL COMMENT '角色: ADMIN/TEACHER/STUDENT',
   `status` tinyint(4) DEFAULT '1' COMMENT '状态: 0-禁用 1-正常',
+  `department_id` bigint(20) DEFAULT NULL COMMENT '所属学院ID',
   `deleted` tinyint(4) DEFAULT '0' COMMENT '删除标记: 0-未删 1-已删',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_username` (`username`)
+  UNIQUE KEY `uk_username` (`username`),
+  KEY `idx_department_id` (`department_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统用户表';
 
 -- ----------------------------

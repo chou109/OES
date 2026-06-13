@@ -19,6 +19,15 @@ request.interceptors.request.use(config => {
   if (!config.headers['Content-Type']) {
     config.headers['Content-Type'] = 'application/json;charset=UTF-8'
   }
+  // 添加防缓存头
+  config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+  config.headers['Pragma'] = 'no-cache'
+  config.headers['Expires'] = '0'
+  // 对 GET 请求添加时间戳参数防止缓存
+  if (config.method === 'get') {
+    config.params = config.params || {}
+    config.params._t = Date.now()
+  }
   return config
 })
 
@@ -130,7 +139,9 @@ export const questionApi = {
   create: (data) => request.post('/questions', data),
   update: (data) => request.put('/questions', data),
   delete: (id) => request.delete(`/questions/${id}`),
-  getCorrectRate: (id) => request.get(`/questions/${id}/correct-rate`)
+  getCorrectRate: (id) => request.get(`/questions/${id}/correct-rate`),
+  import: (data) => request.post('/questions/import', data),
+  generatePaper: (data) => request.post('/questions/generate-paper', data)
 }
 
 export const paperApi = {

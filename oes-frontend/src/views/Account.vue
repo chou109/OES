@@ -134,7 +134,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../store'
-import { userApi } from '../utils/api'
+import { userApi, authApi } from '../utils/api'
 
 const userStore = useUserStore()
 const activeTab = ref('basic')
@@ -216,14 +216,27 @@ const beforeAvatarUpload = (file) => {
   return isJPG && isLt2M
 }
 
-const changePassword = () => {
+const changePassword = async () => {
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
     ElMessage.error('两次输入的密码不一致')
     return
   }
-  // 模拟密码修改操作
-  ElMessage.success('密码修改成功')
-  resetPasswordForm()
+  
+  try {
+    const res = await authApi.changePassword({
+      oldPassword: passwordForm.oldPassword,
+      newPassword: passwordForm.newPassword
+    })
+    
+    if (res.code === 200) {
+      ElMessage.success('密码修改成功')
+      resetPasswordForm()
+    } else {
+      ElMessage.error(res.message || '密码修改失败')
+    }
+  } catch (error) {
+    ElMessage.error('密码修改失败：' + (error.message || '网络错误'))
+  }
 }
 
 const resetPasswordForm = () => {

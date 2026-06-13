@@ -59,6 +59,11 @@ public class ExamExamRecordService extends ServiceImpl<ExamExamRecordMapper, Exa
                 .eq(ExamExamRecord::getStudentId, studentId));
     }
 
+    public List<ExamExamRecord> getByStudentId(Long studentId) {
+        return list(new LambdaQueryWrapper<ExamExamRecord>()
+                .eq(ExamExamRecord::getStudentId, studentId));
+    }
+
     @Transactional
     public ExamExamRecord startExam(Long examId, Long studentId, Long paperId,
                                      String questionOrder, String optionOrder) {

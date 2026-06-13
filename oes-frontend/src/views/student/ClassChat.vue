@@ -251,7 +251,8 @@ const scrollToBottom = () => {
 
 const getSenderName = (senderId) => {
   const member = members.value.find(m => m.userId == senderId)
-  return member ? member.realName : '未知用户'
+  if (!member) return '未知用户'
+  return member.realName || member.username || '未知用户'
 }
 
 const getSenderAvatar = (senderId) => {

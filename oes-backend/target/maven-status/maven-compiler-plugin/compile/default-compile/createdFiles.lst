@@ -16,8 +16,10 @@ com\oes\mapper\ExamAnswerMapper.class
 com\oes\service\SysClassMemberService.class
 com\oes\service\ExamSubjectService.class
 com\oes\controller\ExamExamRecordController.class
+com\oes\config\GlobalExceptionHandler.class
 com\oes\common\base\R.class
 com\oes\aspect\LogAspect.class
+com\oes\config\JacksonConfig.class
 com\oes\mapper\ExamPaperMapper.class
 com\oes\service\SysClassMessageService.class
 com\oes\service\ExamExamService.class
@@ -48,6 +50,7 @@ com\oes\mapper\SysLogMapper.class
 com\oes\entity\SysUser.class
 com\oes\mapper\ExamKnowledgePointMapper.class
 com\oes\mapper\ExamExamMapper.class
+com\oes\service\ExamPaperService$1.class
 com\oes\controller\ExamSubjectController.class
 com\oes\entity\SysClassMessage.class
 com\oes\dto\PaperRequestDTO.class
@@ -65,6 +68,7 @@ com\oes\entity\SysLog.class
 com\oes\mapper\SysClassMessageMapper.class
 com\oes\config\WebMvcConfig.class
 com\oes\controller\SysLogController.class
+com\oes\config\JacksonConfig$1.class
 com\oes\controller\ExamQuestionController.class
 com\oes\mapper\ExamSubjectMapper.class
 com\oes\mapper\SysUserMapper.class

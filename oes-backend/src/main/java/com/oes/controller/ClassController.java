@@ -69,6 +69,7 @@ public class ClassController {
             map.put("role", member.getRole());
             map.put("muteUntil", member.getMuteUntil());
             map.put("joinedAt", member.getJoinedAt());
+            map.put("departmentId", user.getDepartmentId());
             return map;
         }).toList();
         return R.ok(result);

@@ -21,6 +21,7 @@
         <el-input v-model="params.keyword" placeholder="搜索题目内容" style="width: 200px" clearable @change="loadData" />
         <el-button type="danger" @click="loadData">搜索</el-button>
         <el-button type="danger" @click="handleCreate">新增题目</el-button>
+        <el-button type="primary" @click="showImportDialog = true">批量导入</el-button>
       </div>
 
       <el-table :data="tableData" v-loading="loading" stripe>
@@ -137,6 +138,97 @@
         <el-button type="danger" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
+
+    <!-- 批量导入对话框 -->
+    <el-dialog v-model="showImportDialog" title="批量导入题目" width="800px">
+      <el-form ref="importFormRef" :model="importForm" label-width="120px">
+        <el-form-item label="选择科目" prop="subjectId">
+          <el-select v-model="importForm.subjectId" style="width: 100%">
+            <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="题目文本">
+          <el-input 
+            v-model="importForm.text" 
+            type="textarea" 
+            :rows="12" 
+            placeholder="请粘贴题目文本，支持以下格式：
+
+1. 单选题：
+1. 题目内容
+A. 选项一
+B. 选项二
+C. 选项三
+D. 选项四
+答案：B
+
+2. 多选题：
+2. 题目内容（多选）
+A. 选项一
+B. 选项二
+C. 选项三
+D. 选项四
+答案：A,B
+
+3. 判断题：
+3. 题目内容（对）
+或
+3. 题目内容（错）
+
+4. 填空题：
+4. 题目内容（答案：填空答案）
+
+5. 简答题：
+5. 题目内容
+（参考答案：答案内容）" />
+        </el-form-item>
+        <el-form-item>
+          <el-alert title="格式说明" type="info" :closable="false">
+            <ul style="margin: 0; padding-left: 20px;">
+              <li><strong>题目编号：</strong>支持"1."、"一、"、"（一）"等格式</li>
+              <li><strong>选项格式：</strong>使用"A."、"B."、"C."、"D."开头</li>
+              <li><strong>答案标记：</strong>单独一行写"答案：A"或"答案：A,B"</li>
+              <li><strong>判断题：</strong>在题目末尾添加"（对）"或"（错）"</li>
+              <li><strong>填空题：</strong>使用"（答案：xxx）"或"【答案xxx】"</li>
+              <li><strong>简答题：</strong>使用"（参考答案：xxx）"</li>
+            </ul>
+          </el-alert>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showImportDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleImport">开始导入</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 导入结果对话框 -->
+    <el-dialog v-model="showImportResult" title="导入结果" width="600px">
+      <div v-if="importResult">
+        <div class="result-summary">
+          <div :class="['result-icon', importResult.success ? 'success' : 'error']">
+              <span>{{ importResult.success ? '✓' : '✗' }}</span>
+            </div>
+          <div class="result-info">
+            <p class="result-message">{{ importResult.message }}</p>
+            <div class="result-stats">
+              <span class="stat-item">成功：<strong>{{ importResult.imported }}</strong></span>
+              <span class="stat-item">失败：<strong>{{ importResult.failed }}</strong></span>
+            </div>
+          </div>
+        </div>
+        <div v-if="importResult.errors && importResult.errors.length > 0" class="result-errors">
+          <p class="errors-title">失败详情：</p>
+          <el-scrollbar style="max-height: 200px;">
+            <ul class="errors-list">
+              <li v-for="(error, index) in importResult.errors" :key="index">{{ error }}</li>
+            </ul>
+          </el-scrollbar>
+        </div>
+      </div>
+      <template #footer>
+        <el-button type="primary" @click="showImportResult = false; showImportDialog = false">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -170,6 +262,16 @@ const form = reactive({
   options: [],
   answer: ''
 })
+
+// 批量导入相关
+const showImportDialog = ref(false)
+const showImportResult = ref(false)
+const importFormRef = ref()
+const importForm = reactive({
+  subjectId: null,
+  text: ''
+})
+const importResult = ref(null)
 
 const rules = {
   subjectId: [{ required: true, message: '请选择科目', trigger: 'change' }],
@@ -261,7 +363,13 @@ const handleEdit = (row) => {
   if (row.options) {
     try {
       const options = typeof row.options === 'string' ? JSON.parse(row.options) : row.options
-      form.options = Object.keys(options).map(key => ({ key, content: options[key] }))
+      // 处理数组格式的选项
+      if (Array.isArray(options)) {
+        form.options = options
+      } else {
+        // 处理对象格式的选项（旧格式兼容）
+        form.options = Object.keys(options).map(key => ({ key, content: options[key] }))
+      }
       form.optionCount = form.options.length
     } catch {
       form.options = []
@@ -322,6 +430,37 @@ const handleDelete = async (row) => {
     }
   } catch (e) {
     ElMessage.error(e.message)
+  }
+}
+
+// 批量导入题目
+const handleImport = async () => {
+  if (!importForm.subjectId) {
+    ElMessage.warning('请选择科目')
+    return
+  }
+  if (!importForm.text.trim()) {
+    ElMessage.warning('请输入题目文本')
+    return
+  }
+  
+  try {
+    const res = await questionApi.import({
+      subjectId: importForm.subjectId,
+      text: importForm.text
+    })
+    if (res.code === 200) {
+      importResult.value = res.data
+      showImportResult.value = true
+      if (res.data.success) {
+        loadData()
+      }
+    } else {
+      ElMessage.error(res.message || '导入失败')
+    }
+  } catch (e) {
+    console.error('导入错误:', e)
+    ElMessage.error(e.response?.data?.message || e.message || '导入失败，请稍后重试')
   }
 }
 
@@ -465,5 +604,105 @@ onMounted(() => {
 :deep(.el-pagination.is-background .el-pager li:not(.disabled).active) {
   background: linear-gradient(135deg, #dc2626 0%, #ec4f4f 100%);
   border-color: transparent;
+}
+
+/* 导入结果和组卷结果样式 */
+.result-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  
+  .result-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    
+    &.success {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: #fff;
+    }
+    
+    &.error {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #fff;
+    }
+  }
+  
+  .result-info {
+    flex: 1;
+    
+    .result-message {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin: 0 0 12px 0;
+    }
+    
+    .result-stats {
+      display: flex;
+      gap: 24px;
+      
+      .stat-item {
+        font-size: 14px;
+        color: #666;
+        
+        strong {
+          color: #dc2626;
+          margin-left: 4px;
+        }
+      }
+    }
+  }
+}
+
+.result-errors {
+  padding: 0 20px 20px;
+  
+  .errors-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #dc2626;
+    margin: 0 0 12px 0;
+  }
+  
+  .errors-list {
+    margin: 0;
+    padding-left: 20px;
+    
+    li {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+  }
+}
+
+/* 题目数量网格 */
+.question-count-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  
+  .count-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    
+    label {
+      font-size: 14px;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    :deep(.el-input__wrapper) {
+      width: 120px;
+    }
+  }
 }
 </style>

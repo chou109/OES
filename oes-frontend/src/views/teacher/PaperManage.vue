@@ -17,6 +17,7 @@
         <el-input v-model="params.keyword" placeholder="搜索试卷标题" style="width: 200px" clearable @change="loadData" />
         <el-button type="danger" @click="loadData">搜索</el-button>
         <el-button type="danger" @click="handleCreate">创建试卷</el-button>
+        <el-button type="success" @click="showGenerateDialog = true">自动组卷</el-button>
       </div>
 
       <el-table :data="tableData" v-loading="loading" stripe>
@@ -155,6 +156,88 @@
       </template>
     </el-dialog>
 
+    <!-- 自动组卷对话框 -->
+    <el-dialog v-model="showGenerateDialog" title="自动组卷" width="700px">
+      <el-form ref="generateFormRef" :model="generateForm" label-width="120px">
+        <el-form-item label="试卷标题" prop="title">
+          <el-input v-model="generateForm.title" placeholder="请输入试卷标题" />
+        </el-form-item>
+        <el-form-item label="选择科目" prop="subjectId">
+          <el-select v-model="generateForm.subjectId" style="width: 100%">
+            <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="总分" prop="totalScore">
+          <el-input v-model.number="generateForm.totalScore" type="number" placeholder="请输入试卷总分" />
+        </el-form-item>
+        <el-form-item label="时长(分钟)" prop="duration">
+          <el-input v-model.number="generateForm.duration" type="number" placeholder="请输入考试时长" />
+        </el-form-item>
+        <el-form-item label="及格分" prop="passScore">
+          <el-input v-model.number="generateForm.passScore" type="number" placeholder="请输入及格分数" />
+        </el-form-item>
+        <el-form-item label="题目数量设置">
+          <div class="question-count-grid">
+            <div class="count-item">
+              <label>单选题</label>
+              <el-input v-model.number="generateForm.questionCounts.SINGLE_CHOICE" type="number" min="0" />
+            </div>
+            <div class="count-item">
+              <label>多选题</label>
+              <el-input v-model.number="generateForm.questionCounts.MULTIPLE_CHOICE" type="number" min="0" />
+            </div>
+            <div class="count-item">
+              <label>判断题</label>
+              <el-input v-model.number="generateForm.questionCounts.JUDGMENT" type="number" min="0" />
+            </div>
+            <div class="count-item">
+              <label>填空题</label>
+              <el-input v-model.number="generateForm.questionCounts.FILL_BLANK" type="number" min="0" />
+            </div>
+            <div class="count-item">
+              <label>简答题</label>
+              <el-input v-model.number="generateForm.questionCounts.ESSAY" type="number" min="0" />
+            </div>
+          </div>
+        </el-form-item>
+        <el-form-item>
+          <el-alert title="提示" type="warning" :closable="false">
+            <p>系统将从题库中随机抽取指定数量的题目自动生成试卷</p>
+            <p>如果题库中某题型数量不足，组卷将失败</p>
+          </el-alert>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showGenerateDialog = false">取消</el-button>
+        <el-button type="success" @click="handleGeneratePaper">生成试卷</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 组卷结果对话框 -->
+    <el-dialog v-model="showGenerateResult" title="组卷结果" width="500px">
+      <div v-if="generateResult">
+        <div class="result-summary">
+          <div :class="['result-icon', generateResult.success ? 'success' : 'error']">
+            <span>{{ generateResult.success ? '✓' : '✗' }}</span>
+          </div>
+          <div class="result-info">
+            <p class="result-message">{{ generateResult.message }}</p>
+            <div v-if="generateResult.success" class="result-stats">
+              <span class="stat-item">题目数量：<strong>{{ generateResult.questionCount }}</strong></span>
+              <span class="stat-item">总分：<strong>{{ generateResult.totalScore }}</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button v-if="!generateResult?.success" type="primary" @click="showGenerateResult = false">确定</el-button>
+        <template v-else>
+          <el-button @click="showGenerateResult = false; showGenerateDialog = false">关闭</el-button>
+          <el-button type="success" @click="goToPaper(generateResult.paperId)">查看试卷</el-button>
+        </template>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="previewDialogVisible" :title="'预览: ' + previewTitle" width="800px">
       <div class="preview-container">
         <div v-for="(section, sIndex) in questionSections" :key="section.type" class="preview-section">
@@ -199,6 +282,26 @@ const previewTitle = ref('')
 const selectedQuestions = ref([])
 const questionTableRef = ref()
 const questionScores = reactive({})
+
+// 自动组卷相关
+const showGenerateDialog = ref(false)
+const showGenerateResult = ref(false)
+const generateFormRef = ref()
+const generateForm = reactive({
+  title: '',
+  subjectId: null,
+  totalScore: 100,
+  duration: 120,
+  passScore: 60,
+  questionCounts: {
+    SINGLE_CHOICE: 10,
+    MULTIPLE_CHOICE: 5,
+    JUDGMENT: 5,
+    FILL_BLANK: 5,
+    ESSAY: 2
+  }
+})
+const generateResult = ref(null)
 
 const typeMap = {
   SINGLE_CHOICE: '单选题',
@@ -447,6 +550,62 @@ const handleDelete = async (row) => {
   } catch (e) { ElMessage.error(e.message) }
 }
 
+// 自动组卷
+const handleGeneratePaper = async () => {
+  if (!generateForm.title.trim()) {
+    ElMessage.warning('请输入试卷标题')
+    return
+  }
+  if (!generateForm.subjectId) {
+    ElMessage.warning('请选择科目')
+    return
+  }
+  
+  const totalCount = Object.values(generateForm.questionCounts).reduce((sum, count) => sum + (count || 0), 0)
+  if (totalCount === 0) {
+    ElMessage.warning('请至少选择一种题型')
+    return
+  }
+  
+  try {
+    const res = await questionApi.generatePaper({
+      title: generateForm.title,
+      subjectId: generateForm.subjectId,
+      totalScore: generateForm.totalScore,
+      duration: generateForm.duration,
+      passScore: generateForm.passScore,
+      questionCountMap: generateForm.questionCounts
+    })
+    if (res.code === 200) {
+      generateResult.value = res.data
+      showGenerateResult.value = true
+      if (res.data.success) {
+        loadData()
+      }
+    }
+  } catch (e) {
+    ElMessage.error(e.message)
+  }
+}
+
+// 跳转到试卷编辑页面
+const goToPaper = async (paperId) => {
+  showGenerateResult.value = false
+  showGenerateDialog.value = false
+  
+  try {
+    // 先获取试卷详情
+    const res = await paperApi.getById(paperId)
+    if (res.code === 200) {
+      handleEdit(res.data)
+    } else {
+      ElMessage.error('获取试卷信息失败')
+    }
+  } catch (e) {
+    ElMessage.error('获取试卷信息失败: ' + e.message)
+  }
+}
+
 onMounted(() => { loadData(); loadSubjects() })
 </script>
 
@@ -477,4 +636,79 @@ onMounted(() => { loadData(); loadSubjects() })
 .preview-question .question-score { color: #ef4444; font-weight: 500; white-space: nowrap; }
 .preview-question .question-options { padding-left: 24px; }
 .preview-question .option-item { padding: 6px 0; color: #475569; line-height: 1.5; }
+
+/* 自动组卷相关样式 */
+.result-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  
+  .result-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #fff;
+    
+    &.success {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    }
+    
+    &.error {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+  }
+  
+  .result-info {
+    flex: 1;
+    
+    .result-message {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin: 0 0 12px 0;
+    }
+    
+    .result-stats {
+      display: flex;
+      gap: 24px;
+      
+      .stat-item {
+        font-size: 14px;
+        color: #666;
+        
+        strong {
+          color: #ef4444;
+          margin-left: 4px;
+        }
+      }
+    }
+  }
+}
+
+.question-count-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  
+  .count-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    
+    label {
+      font-size: 14px;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    :deep(.el-input__wrapper) {
+      width: 120px;
+    }
+  }
+}
 </style>

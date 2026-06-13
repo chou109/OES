@@ -41,9 +41,10 @@
             <el-tag :type="statusType(row.status)">{{ statusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" width="340" fixed="right">
           <template #default="{ row }">
             <el-button type="danger" link @click="handleMonitor(row)">监控</el-button>
+            <el-button type="danger" link @click="handleEdit(row)">修改</el-button>
             <el-button type="danger" link v-if="row.status === 'PENDING'" @click="handleStart(row)">开始</el-button>
             <el-button type="danger" link v-if="row.status === 'ONGOING'" @click="handleExtend(row)">延时</el-button>
             <el-button type="danger" link v-if="row.status === 'ONGOING'" @click="handleFinish(row)">结束</el-button>
@@ -64,7 +65,7 @@
       />
     </div>
 
-    <el-dialog v-model="dialogVisible" title="发布考试" width="600px">
+    <el-dialog v-model="dialogVisible" :title="editMode ? '修改考试' : '发布考试'" width="600px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="考试标题" prop="title">
           <el-input v-model="form.title" />
@@ -126,7 +127,7 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="danger" @click="handleSubmit">发布</el-button>
+        <el-button type="danger" @click="handleSubmit">{{ editMode ? '保存修改' : '发布' }}</el-button>
       </template>
     </el-dialog>
 
@@ -203,6 +204,8 @@ const current = ref(1)
 const size = ref(10)
 const total = ref(0)
 const dialogVisible = ref(false)
+const editMode = ref(false)
+const editId = ref(null)
 const monitorVisible = ref(false)
 const monitorExam = ref(null)
 const monitorRecords = ref([])
@@ -290,9 +293,38 @@ const onPaperChange = (paperId) => {
 }
 
 const handleCreate = () => {
+  editMode.value = false
+  editId.value = null
   const queryClassId = route.query.classId
   Object.assign(form, { title: '', paperId: null, subjectId: null, classIds: queryClassId ? [parseInt(queryClassId)] : [], startTime: null, endTime: null, duration: 120, totalScore: 100, passRate: 60, config: { shuffleQuestions: true, shuffleOptions: true, leaveDetection: true, maxLeaveCount: 3, allowViewAfterExam: true } })
   dialogVisible.value = true
+}
+
+const handleEdit = async (row) => {
+  editMode.value = true
+  editId.value = row.id
+  try {
+    const res = await examApi.getById(row.id)
+    if (res.code === 200) {
+      const exam = res.data
+      const config = exam.antiCheatConfig ? JSON.parse(exam.antiCheatConfig) : { shuffleQuestions: true, shuffleOptions: true, leaveDetection: true, maxLeaveCount: 3, allowViewAfterExam: true }
+      Object.assign(form, {
+        title: exam.title,
+        paperId: exam.paperId,
+        subjectId: exam.subjectId,
+        classIds: exam.classIds ? exam.classIds.split(',').map(Number) : [],
+        startTime: exam.startTime,
+        endTime: exam.endTime,
+        duration: exam.duration,
+        totalScore: exam.totalScore,
+        passRate: exam.passScore ? Math.round((exam.passScore / exam.totalScore) * 100) : 60,
+        config: config
+      })
+      dialogVisible.value = true
+    }
+  } catch (e) {
+    ElMessage.error('获取考试信息失败')
+  }
 }
 
 const handleSubmit = async () => {
@@ -301,6 +333,7 @@ const handleSubmit = async () => {
   try {
     const passScore = Math.round(form.totalScore * form.passRate / 100)
     const submitData = {
+      id: editId.value,
       title: form.title,
       paperId: form.paperId,
       subjectId: form.subjectId,
@@ -310,11 +343,24 @@ const handleSubmit = async () => {
       duration: form.duration,
       totalScore: form.totalScore,
       passScore: passScore,
-      antiCheatConfig: JSON.stringify(form.config)
+      antiCheatConfig: JSON.stringify(form.config),
+      allowViewAfterExam: form.config.allowViewAfterExam ? 1 : 0
     }
-    const res = await examApi.create(submitData)
-    if (res.code === 200) { ElMessage.success('发布成功'); dialogVisible.value = false; loadData() }
-    else ElMessage.error(res.message)
+    
+    let res
+    if (editMode.value) {
+      res = await examApi.update(submitData)
+    } else {
+      res = await examApi.create(submitData)
+    }
+    
+    if (res.code === 200) { 
+      ElMessage.success(editMode.value ? '修改成功' : '发布成功')
+      dialogVisible.value = false
+      loadData() 
+    } else {
+      ElMessage.error(res.message)
+    }
   } catch (e) { ElMessage.error(e.message) }
 }
 

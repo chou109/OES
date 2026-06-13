@@ -33,7 +33,7 @@ const routes = [
       {
         path: 'classes',
         name: 'ClassManage',
-        component: () => import('../views/Classes.vue'),
+        component: () => import('../views/admin/ClassManage.vue'),
         meta: { title: '班级管理', roles: ['ADMIN', 'TEACHER'] }
       },
       {

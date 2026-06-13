@@ -260,8 +260,13 @@ const onPaperChange = async (paperId) => {
 }
 
 const handleExamSubmit = async () => {
+  console.log('开始提交考试表单...')
   const valid = await examFormRef.value.validate().catch(() => false)
-  if (!valid) return
+  console.log('表单验证结果:', valid)
+  if (!valid) {
+    console.log('表单验证失败')
+    return
+  }
   
   try {
     const passScore = Math.round(examForm.totalScore * examForm.passRate / 100)
@@ -275,10 +280,29 @@ const handleExamSubmit = async () => {
       duration: examForm.duration,
       totalScore: examForm.totalScore,
       passScore: passScore,
-      antiCheatConfig: JSON.stringify(examForm.config)
+      antiCheatConfig: JSON.stringify(examForm.config),
+      allowViewAfterExam: examForm.config.allowViewAfterExam ? 1 : 0
     }
     const res = await examApi.create(submitData)
     if (res.code === 200) {
+      // 获取创建的考试ID（后端直接返回ID）
+      const examId = res.data
+      console.log('创建考试成功，考试ID:', examId)
+      if (examId) {
+        // 调用发布接口，为学生创建考试记录
+        try {
+          const publishRes = await examApi.publish(examId)
+          console.log('发布考试结果:', publishRes)
+          if (publishRes.code !== 200) {
+            throw new Error(publishRes.message || '发布失败')
+          }
+        } catch (e) {
+          console.error('发布考试失败:', e)
+          ElMessage.error('发布考试失败: ' + (e.message || e))
+          return
+        }
+      }
+      
       ElMessage.success('发布成功')
       examDialogVisible.value = false
       
@@ -288,7 +312,7 @@ const handleExamSubmit = async () => {
       const userId = userStore.userInfo?.userId || localStorage.getItem('userId')
       const endTime = new Date(examForm.endTime)
       const endTimeStr = `${endTime.getFullYear()}/${String(endTime.getMonth() + 1).padStart(2, '0')}/${String(endTime.getDate()).padStart(2, '0')} ${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`
-      const noticeContent = `EXAM_NOTICE|${examForm.title}|${timeStr}|${endTimeStr}|${examForm.duration}|${res.data?.id || ''}|PUBLISH`
+      const noticeContent = `EXAM_NOTICE|${examForm.title}|${timeStr}|${endTimeStr}|${examForm.duration}|${examId || ''}|PUBLISH`
       await classApi.sendMessage(classId.value, noticeContent, userId)
       await loadMessages()
       
@@ -432,7 +456,8 @@ const scrollToBottom = () => {
 
 const getSenderName = (senderId) => {
   const member = members.value.find(m => m.userId == senderId)
-  return member ? member.realName : '未知用户'
+  if (!member) return '未知用户'
+  return member.realName || member.username || '未知用户'
 }
 
 const getSenderAvatar = (senderId) => {

@@ -4,18 +4,23 @@ import com.oes.common.base.PageResult;
 import com.oes.common.base.R;
 import com.oes.entity.ExamQuestion;
 import com.oes.service.ExamQuestionService;
+import com.oes.config.JwtUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/questions")
 public class ExamQuestionController {
 
     private final ExamQuestionService examQuestionService;
+    private final JwtUtils jwtUtils;
 
-    public ExamQuestionController(ExamQuestionService examQuestionService) {
+    public ExamQuestionController(ExamQuestionService examQuestionService, JwtUtils jwtUtils) {
         this.examQuestionService = examQuestionService;
+        this.jwtUtils = jwtUtils;
     }
 
     @GetMapping("/page")
@@ -65,5 +70,44 @@ public class ExamQuestionController {
     @GetMapping("/{id}/correct-rate")
     public R<Double> getCorrectRate(@PathVariable Long id) {
         return R.ok(examQuestionService.getCorrectRate(id));
+    }
+
+    /**
+     * 批量导入题目（从文本识别）
+     */
+    @PostMapping("/import")
+    public R<Map<String, Object>> importQuestions(
+            @RequestBody Map<String, Object> params,
+            HttpServletRequest request) {
+        String text = (String) params.get("text");
+        Long subjectId = params.get("subjectId") != null ? ((Number) params.get("subjectId")).longValue() : null;
+        
+        String token = request.getHeader("Authorization").replace("Bearer ", "");
+        Long creatorId = jwtUtils.getUserIdFromToken(token);
+        
+        return R.ok(examQuestionService.importFromText(text, subjectId, creatorId));
+    }
+
+    /**
+     * 自动组卷
+     */
+    @PostMapping("/generate-paper")
+    public R<Map<String, Object>> generatePaper(
+            @RequestBody Map<String, Object> params,
+            HttpServletRequest request) {
+        String title = (String) params.get("title");
+        Long subjectId = params.get("subjectId") != null ? ((Number) params.get("subjectId")).longValue() : null;
+        Integer totalScore = params.get("totalScore") != null ? ((Number) params.get("totalScore")).intValue() : null;
+        Integer duration = params.get("duration") != null ? ((Number) params.get("duration")).intValue() : null;
+        Integer passScore = params.get("passScore") != null ? ((Number) params.get("passScore")).intValue() : null;
+        String knowledgePointIds = (String) params.get("knowledgePointIds");
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Integer> questionCountMap = (Map<String, Integer>) params.get("questionCountMap");
+        
+        String token = request.getHeader("Authorization").replace("Bearer ", "");
+        Long creatorId = jwtUtils.getUserIdFromToken(token);
+        
+        return R.ok(examQuestionService.autoGeneratePaper(title, subjectId, questionCountMap, totalScore, duration, passScore, creatorId, knowledgePointIds));
     }
 }

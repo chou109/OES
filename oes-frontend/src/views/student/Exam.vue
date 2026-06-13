@@ -108,11 +108,27 @@ const formatTime = (seconds) => {
 const typeText = (type) => ({ SINGLE_CHOICE: '单选题', MULTIPLE_CHOICE: '多选题', JUDGMENT: '判断题', FILL_BLANK: '填空题', ESSAY: '简答题', PROGRAMMING: '编程题' }[type] || type)
 
 const parseOptions = (options) => {
-  try { return options ? JSON.parse(options) : {} } catch { return {} }
+  try {
+    const parsed = JSON.parse(options)
+    // 如果是数组格式，转换为对象格式
+    if (Array.isArray(parsed)) {
+      const result = {}
+      parsed.forEach(item => {
+        if (item.key && item.content) {
+          result[item.key] = item.content
+        }
+      })
+      return result
+    }
+    return parsed
+  } catch {
+    return {}
+  }
 }
 
 const handleMultiChange = (value) => {
-  answers[questions.value[currentIndex.value].id] = value.join(',')
+  const qId = questions.value[currentIndex.value].id
+  answers[qId] = value.join(',')
   saveAnswer()
 }
 

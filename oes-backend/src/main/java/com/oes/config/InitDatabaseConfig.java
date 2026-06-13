@@ -111,6 +111,7 @@ public class InitDatabaseConfig implements CommandLineRunner {
                     "`avatar` varchar(255) DEFAULT NULL," +
                     "`role` varchar(20) NOT NULL DEFAULT 'STUDENT'," +
                     "`status` tinyint(4) DEFAULT '1'," +
+                    "`department_id` bigint(20) DEFAULT NULL," +
                     "`deleted` tinyint(4) DEFAULT '0'," +
                     "`create_time` datetime DEFAULT CURRENT_TIMESTAMP," +
                     "`update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
