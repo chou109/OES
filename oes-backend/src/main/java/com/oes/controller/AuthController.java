@@ -99,7 +99,7 @@ public class AuthController {
         data.put("avatar", user.getAvatar() != null ? user.getAvatar() : "");
         data.put("email", user.getEmail() != null ? user.getEmail() : "");
         data.put("phone", user.getPhone() != null ? user.getPhone() : "");
-        data.put("departmentId", user.getDepartmentId());
+        data.put("departmentId", null);
         return R.ok(data);
     }
 

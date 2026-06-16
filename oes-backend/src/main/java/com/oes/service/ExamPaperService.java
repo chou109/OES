@@ -56,6 +56,7 @@ public class ExamPaperService extends ServiceImpl<ExamPaperMapper, ExamPaper> {
 
             // 计算总分：优先使用传入的分数，否则使用题目默认分数
             int totalScore = 0;
+            StringBuilder scoresBuilder = new StringBuilder();
             for (Long qId : questionIds) {
                 Integer score = (questionScores != null) ? questionScores.get(qId) : null;
                 if (score == null) {
@@ -64,8 +65,12 @@ public class ExamPaperService extends ServiceImpl<ExamPaperMapper, ExamPaper> {
                 }
                 totalScore += score;
                 examQuestionService.incrementUsedCount(qId);
+                // 保存分值信息
+                if (scoresBuilder.length() > 0) scoresBuilder.append(",");
+                scoresBuilder.append(qId).append(":").append(score);
             }
             paper.setTotalScore(totalScore);
+            paper.setQuestionScores(scoresBuilder.toString());
         }
         paper.setStatus("DRAFT");
         return save(paper);
@@ -80,6 +85,7 @@ public class ExamPaperService extends ServiceImpl<ExamPaperMapper, ExamPaper> {
 
             // 计算总分：优先使用传入的分数，否则使用题目默认分数
             int totalScore = 0;
+            StringBuilder scoresBuilder = new StringBuilder();
             for (Long qId : questionIds) {
                 Integer score = (questionScores != null) ? questionScores.get(qId) : null;
                 if (score == null) {
@@ -87,8 +93,12 @@ public class ExamPaperService extends ServiceImpl<ExamPaperMapper, ExamPaper> {
                     score = (q != null && q.getScore() != null) ? q.getScore() : 5;
                 }
                 totalScore += score;
+                // 保存分值信息
+                if (scoresBuilder.length() > 0) scoresBuilder.append(",");
+                scoresBuilder.append(qId).append(":").append(score);
             }
             paper.setTotalScore(totalScore);
+            paper.setQuestionScores(scoresBuilder.toString());
         }
         return updateById(paper);
     }
@@ -135,7 +145,66 @@ public class ExamPaperService extends ServiceImpl<ExamPaperMapper, ExamPaper> {
 
     public List<ExamQuestion> getQuestions(ExamPaper paper) {
         List<Long> ids = getQuestionIds(paper);
-        return examQuestionService.listByIds(ids);
+        List<ExamQuestion> questions = examQuestionService.listByIds(ids);
+        
+        // 创建题目ID到题目对象的映射
+        Map<Long, ExamQuestion> questionMap = new java.util.HashMap<>();
+        for (ExamQuestion q : questions) {
+            questionMap.put(q.getId(), q);
+        }
+        
+        // 优先从JSON格式的questionIds中获取分值（自动组卷格式）
+        String questionIds = paper.getQuestionIds();
+        if (questionIds != null && questionIds.startsWith("[")) {
+            try {
+                List<Map<String, Object>> list = objectMapper.readValue(questionIds, 
+                    new TypeReference<List<Map<String, Object>>>() {});
+                for (Map<String, Object> item : list) {
+                    Long qId = ((Number) item.get("questionId")).longValue();
+                    Integer score = item.get("score") != null ? ((Number) item.get("score")).intValue() : null;
+                    ExamQuestion q = questionMap.get(qId);
+                    if (q != null && score != null) {
+                        q.setScore(score);
+                    }
+                }
+                return questions;
+            } catch (JsonProcessingException e) {
+                // JSON解析失败，继续尝试其他方式
+            }
+        }
+        
+        // 如果试卷中有存储分值信息，设置到题目对象中（手动组卷格式）
+        if (paper.getQuestionScores() != null && !paper.getQuestionScores().isEmpty()) {
+            Map<Long, Integer> scoreMap = parseQuestionScores(paper.getQuestionScores());
+            for (ExamQuestion q : questions) {
+                Integer score = scoreMap.get(q.getId());
+                if (score != null) {
+                    q.setScore(score);
+                }
+            }
+        }
+        
+        return questions;
+    }
+    
+    private Map<Long, Integer> parseQuestionScores(String questionScores) {
+        Map<Long, Integer> scoreMap = new java.util.HashMap<>();
+        if (questionScores != null && !questionScores.isEmpty()) {
+            String[] pairs = questionScores.split(",");
+            for (String pair : pairs) {
+                String[] parts = pair.split(":");
+                if (parts.length == 2) {
+                    try {
+                        Long qId = Long.parseLong(parts[0].trim());
+                        Integer score = Integer.parseInt(parts[1].trim());
+                        scoreMap.put(qId, score);
+                    } catch (NumberFormatException e) {
+                        // 忽略解析错误
+                    }
+                }
+            }
+        }
+        return scoreMap;
     }
 
     public ExamPaper getWithQuestions(Long paperId) {

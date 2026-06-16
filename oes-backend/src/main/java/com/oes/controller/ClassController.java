@@ -2,6 +2,7 @@ package com.oes.controller;
 
 import com.oes.common.base.PageResult;
 import com.oes.common.base.R;
+import com.oes.config.JwtUtils;
 import com.oes.entity.SysClass;
 import com.oes.entity.SysClassMember;
 import com.oes.entity.SysClassMessage;
@@ -27,17 +28,20 @@ public class ClassController {
     private final SysClassMessageService classMessageService;
     private final SysUserService sysUserService;
     private final SysLogService sysLogService;
+    private final JwtUtils jwtUtils;
 
     public ClassController(SysClassService sysClassService, 
                           SysClassMemberService classMemberService,
                           SysClassMessageService classMessageService,
                           SysUserService sysUserService,
-                          SysLogService sysLogService) {
+                          SysLogService sysLogService,
+                          JwtUtils jwtUtils) {
         this.sysClassService = sysClassService;
         this.classMemberService = classMemberService;
         this.classMessageService = classMessageService;
         this.sysUserService = sysUserService;
         this.sysLogService = sysLogService;
+        this.jwtUtils = jwtUtils;
     }
 
     @GetMapping("/my-classes")
@@ -69,7 +73,7 @@ public class ClassController {
             map.put("role", member.getRole());
             map.put("muteUntil", member.getMuteUntil());
             map.put("joinedAt", member.getJoinedAt());
-            map.put("departmentId", user.getDepartmentId());
+            map.put("departmentId", null);
             return map;
         }).toList();
         return R.ok(result);
@@ -121,8 +125,8 @@ public class ClassController {
     }
 
     @PostMapping("/create")
-    public R<SysClass> createClass(@RequestBody Map<String, Object> request, @RequestParam Long teacherId, HttpServletRequest httpRequest) {
-        String className = (String) request.get("className");
+    public R<SysClass> createClass(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
+        String className = (String) request.get("name");
         SysClass sysClass = new SysClass();
         sysClass.setName(className);
         sysClass.setCode((String) request.get("code"));
@@ -135,6 +139,9 @@ public class ClassController {
         
         sysClassService.save(sysClass);
         
+        // 从token中获取teacherId
+        String token = httpRequest.getHeader("Authorization").replace("Bearer ", "");
+        Long teacherId = jwtUtils.getUserIdFromToken(token);
         classMemberService.addMember(sysClass.getId(), teacherId, "OWNER");
         
         try {

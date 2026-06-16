@@ -39,6 +39,7 @@ com\oes\service\SysLogService.class
 com\oes\controller\SysClassController.class
 com\oes\interceptor\AuthInterceptor.class
 com\oes\entity\ExamExam.class
+com\oes\service\ExamPaperService$2.class
 com\oes\entity\SysClassMember.class
 com\oes\controller\ExamKnowledgePointController.class
 com\oes\controller\AuthController.class

@@ -18,6 +18,7 @@ public class ExamPaper extends BaseEntity {
     private Long creatorId;
     private String questionIds;
     private String questionOrder;
+    private String questionScores;
     private String config;
     private String status;
 }

@@ -107,7 +107,22 @@
             <span class="subject-tip">当前科目：{{ getSubjectName(form.subjectId) }}</span>
           </div>
 
-          <el-table :data="questions" height="350" @selection-change="handleSelectionChange" ref="questionTableRef" v-loading="questionsLoading">
+          <!-- 按题型批量设置分值 -->
+          <div class="batch-score-setting" v-if="selectedQuestions.length > 0">
+            <span class="setting-title">批量设置分值：</span>
+            <el-select v-model="batchScoreType" placeholder="选择题型" style="width: 120px">
+              <el-option label="单选题" value="SINGLE_CHOICE" />
+              <el-option label="多选题" value="MULTIPLE_CHOICE" />
+              <el-option label="判断题" value="JUDGMENT" />
+              <el-option label="填空题" value="FILL_BLANK" />
+              <el-option label="简答题" value="ESSAY" />
+              <el-option label="编程题" value="PROGRAMMING" />
+            </el-select>
+            <el-input-number v-model="batchScoreValue" :min="1" :max="100" style="width: 100px" placeholder="分值" />
+            <el-button type="primary" @click="applyBatchScore">应用到已选题目</el-button>
+          </div>
+
+          <el-table :data="questions" height="350" @selection-change="handleSelectionChange" ref="questionTableRef" v-loading="questionsLoading" row-key="id">
             <el-table-column type="selection" width="55" />
             <el-table-column prop="type" label="类型" width="100">
               <template #default="{ row }">
@@ -167,36 +182,62 @@
             <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="总分" prop="totalScore">
-          <el-input v-model.number="generateForm.totalScore" type="number" placeholder="请输入试卷总分" />
+        <el-form-item label="总分">
+          <el-input v-model.number="generatedTotalScore" type="number" placeholder="自动计算" :disabled="true" />
         </el-form-item>
         <el-form-item label="时长(分钟)" prop="duration">
           <el-input v-model.number="generateForm.duration" type="number" placeholder="请输入考试时长" />
         </el-form-item>
-        <el-form-item label="及格分" prop="passScore">
-          <el-input v-model.number="generateForm.passScore" type="number" placeholder="请输入及格分数" />
+        <el-form-item label="及格百分比" prop="passRate">
+          <el-input v-model.number="generateForm.passRate" type="number" min="0" max="100" placeholder="请输入及格百分比" />
+          <span style="margin-left: 10px">{{ generateForm.passRate }}%</span>
         </el-form-item>
-        <el-form-item label="题目数量设置">
+        <el-form-item label="题目数量与分值">
           <div class="question-count-grid">
             <div class="count-item">
               <label>单选题</label>
-              <el-input v-model.number="generateForm.questionCounts.SINGLE_CHOICE" type="number" min="0" />
+              <div class="count-score-row">
+                <el-input v-model.number="generateForm.questionCounts.SINGLE_CHOICE" type="number" min="0" placeholder="数量" />
+                <span class="score-label">每题</span>
+                <el-input v-model.number="generateForm.questionScores.SINGLE_CHOICE" type="number" min="1" max="100" placeholder="分值" />
+                <span class="score-label">分</span>
+              </div>
             </div>
             <div class="count-item">
               <label>多选题</label>
-              <el-input v-model.number="generateForm.questionCounts.MULTIPLE_CHOICE" type="number" min="0" />
+              <div class="count-score-row">
+                <el-input v-model.number="generateForm.questionCounts.MULTIPLE_CHOICE" type="number" min="0" placeholder="数量" />
+                <span class="score-label">每题</span>
+                <el-input v-model.number="generateForm.questionScores.MULTIPLE_CHOICE" type="number" min="1" max="100" placeholder="分值" />
+                <span class="score-label">分</span>
+              </div>
             </div>
             <div class="count-item">
               <label>判断题</label>
-              <el-input v-model.number="generateForm.questionCounts.JUDGMENT" type="number" min="0" />
+              <div class="count-score-row">
+                <el-input v-model.number="generateForm.questionCounts.JUDGMENT" type="number" min="0" placeholder="数量" />
+                <span class="score-label">每题</span>
+                <el-input v-model.number="generateForm.questionScores.JUDGMENT" type="number" min="1" max="100" placeholder="分值" />
+                <span class="score-label">分</span>
+              </div>
             </div>
             <div class="count-item">
               <label>填空题</label>
-              <el-input v-model.number="generateForm.questionCounts.FILL_BLANK" type="number" min="0" />
+              <div class="count-score-row">
+                <el-input v-model.number="generateForm.questionCounts.FILL_BLANK" type="number" min="0" placeholder="数量" />
+                <span class="score-label">每题</span>
+                <el-input v-model.number="generateForm.questionScores.FILL_BLANK" type="number" min="1" max="100" placeholder="分值" />
+                <span class="score-label">分</span>
+              </div>
             </div>
             <div class="count-item">
               <label>简答题</label>
-              <el-input v-model.number="generateForm.questionCounts.ESSAY" type="number" min="0" />
+              <div class="count-score-row">
+                <el-input v-model.number="generateForm.questionCounts.ESSAY" type="number" min="0" placeholder="数量" />
+                <span class="score-label">每题</span>
+                <el-input v-model.number="generateForm.questionScores.ESSAY" type="number" min="1" max="100" placeholder="分值" />
+                <span class="score-label">分</span>
+              </div>
             </div>
           </div>
         </el-form-item>
@@ -238,22 +279,107 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="previewDialogVisible" :title="'预览: ' + previewTitle" width="800px">
-      <div class="preview-container">
-        <div v-for="(section, sIndex) in questionSections" :key="section.type" class="preview-section">
-          <div class="section-header">{{ section.typeName }}</div>
-          <div v-for="(q, qIndex) in section.questions" :key="q.id" class="preview-question">
-            <div class="question-header">
-              <span class="question-number">{{ section.startIndex + qIndex + 1 }}.</span>
-              <span class="question-content">{{ q.content }}</span>
-              <span class="question-score">{{ q.score }}分</span>
-            </div>
-            <div class="question-options" v-if="q.options">
-              <div v-for="(label, key) in parseOptions(q.options)" :key="key" class="option-item">
-                {{ key }}. {{ label }}
-              </div>
+    <el-dialog v-model="previewDialogVisible" :title="'学生视角预览: ' + previewTitle" width="95%" top="10px">
+      <div class="exam-preview-container">
+        <!-- 试卷头部信息 -->
+        <header class="exam-preview-header">
+          <div class="header-left">
+            <h2>{{ previewTitle }}</h2>
+            <div class="exam-meta">
+              <span class="meta-item">总分：{{ previewTotalScore }}分</span>
+              <span class="meta-item">时长：{{ form.duration }}分钟</span>
+              <span class="meta-item">及格分：{{ form.passScore }}分</span>
             </div>
           </div>
+        </header>
+
+        <div class="exam-preview-body">
+          <!-- 左侧题目导航 -->
+          <aside class="question-nav">
+            <div class="nav-section" v-for="section in questionSections" :key="section.type">
+              <div class="section-title">{{ section.typeName }} ({{ section.questions.length }}题)</div>
+              <div class="question-grid">
+                <div
+                  v-for="(q, qIndex) in section.questions"
+                  :key="q.id"
+                  :class="['nav-question-item', { current: currentPreviewQuestion?.id === q.id }]"
+                  @click="setCurrentPreviewQuestion(q)"
+                >
+                  {{ section.startIndex + qIndex + 1 }}
+                </div>
+              </div>
+            </div>
+            <div class="nav-legend">
+              <div class="legend-item"><span class="dot current"></span>当前</div>
+              <div class="legend-item"><span class="dot unanswered"></span>未答</div>
+            </div>
+          </aside>
+
+          <!-- 右侧题目内容 -->
+          <main class="question-content">
+            <div v-if="currentPreviewQuestion" class="question-card">
+              <div class="question-header">
+                <div class="question-info">
+                  <el-tag type="info">{{ getTypeName(currentPreviewQuestion.type) }}</el-tag>
+                  <span class="question-score">{{ currentPreviewQuestion.score }}分</span>
+                </div>
+                <div class="question-number">第 {{ getCurrentQuestionNumber() }} 题</div>
+              </div>
+
+              <div class="question-text">{{ currentPreviewQuestion.content }}</div>
+
+              <!-- 选择题/判断题 -->
+              <div class="question-options" v-if="['SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'JUDGMENT'].includes(currentPreviewQuestion.type)">
+                <el-radio-group v-if="currentPreviewQuestion.type === 'SINGLE_CHOICE'" :disabled="true">
+                  <el-radio v-for="(item, index) in parsePreviewOptions(currentPreviewQuestion)" :key="item.key" :value="item.key">
+                    {{ item.key }}. {{ item.label }}
+                  </el-radio>
+                </el-radio-group>
+
+                <el-checkbox-group v-else-if="currentPreviewQuestion.type === 'MULTIPLE_CHOICE'" :disabled="true">
+                  <el-checkbox v-for="(item, index) in parsePreviewOptions(currentPreviewQuestion)" :key="item.key" :value="item.key">
+                    {{ item.key }}. {{ item.label }}
+                  </el-checkbox>
+                </el-checkbox-group>
+
+                <el-radio-group v-else-if="currentPreviewQuestion.type === 'JUDGMENT'" :disabled="true">
+                  <el-radio v-for="(item, index) in parsePreviewOptions(currentPreviewQuestion)" :key="item.key" :value="item.key">
+                    {{ item.label }}
+                  </el-radio>
+                </el-radio-group>
+              </div>
+
+              <!-- 填空题 -->
+              <div class="question-input" v-else-if="currentPreviewQuestion.type === 'FILL_BLANK'">
+                <el-input
+                  type="textarea"
+                  :rows="4"
+                  placeholder="请输入答案"
+                  disabled
+                />
+              </div>
+
+              <!-- 简答题/编程题 -->
+              <div class="question-input" v-else>
+                <el-input
+                  type="textarea"
+                  :rows="8"
+                  placeholder="请输入答案"
+                  disabled
+                />
+              </div>
+
+              <div class="question-actions">
+                <el-button @click="prevPreviewQuestion" :disabled="isFirstPreviewQuestion">上一题</el-button>
+                <span class="progress-text">{{ getCurrentQuestionNumber() }} / {{ previewQuestions.length }}</span>
+                <el-button @click="nextPreviewQuestion" :disabled="isLastPreviewQuestion">下一题</el-button>
+              </div>
+            </div>
+
+            <div v-else class="no-question">
+              <el-empty description="暂无题目" />
+            </div>
+          </main>
         </div>
       </div>
     </el-dialog>
@@ -261,7 +387,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox, ElEmpty } from 'element-plus'
 import { paperApi, subjectApi, questionApi } from '../../utils/api'
 
@@ -279,6 +405,7 @@ const formRef = ref()
 const questions = ref([])
 const previewQuestions = ref([])
 const previewTitle = ref('')
+const currentPreviewQuestion = ref(null)
 const selectedQuestions = ref([])
 const questionTableRef = ref()
 const questionScores = reactive({})
@@ -290,18 +417,35 @@ const generateFormRef = ref()
 const generateForm = reactive({
   title: '',
   subjectId: null,
-  totalScore: 100,
   duration: 120,
-  passScore: 60,
+  passRate: 60,
   questionCounts: {
     SINGLE_CHOICE: 10,
     MULTIPLE_CHOICE: 5,
     JUDGMENT: 5,
     FILL_BLANK: 5,
     ESSAY: 2
+  },
+  questionScores: {
+    SINGLE_CHOICE: 5,
+    MULTIPLE_CHOICE: 10,
+    JUDGMENT: 5,
+    FILL_BLANK: 10,
+    ESSAY: 20
   }
 })
 const generateResult = ref(null)
+
+const generatedTotalScore = computed(() => {
+  let total = 0
+  const types = ['SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'JUDGMENT', 'FILL_BLANK', 'ESSAY']
+  types.forEach(type => {
+    const count = generateForm.questionCounts[type] || 0
+    const score = generateForm.questionScores[type] || 0
+    total += count * score
+  })
+  return total
+})
 
 const typeMap = {
   SINGLE_CHOICE: '单选题',
@@ -332,13 +476,82 @@ const questionSections = computed(() => {
   return sections
 })
 
+const previewTotalScore = computed(() => {
+  return previewQuestions.value.reduce((sum, q) => sum + (q.score || 0), 0)
+})
+
+const setCurrentPreviewQuestion = (q) => {
+  currentPreviewQuestion.value = q
+}
+
+const getCurrentQuestionNumber = () => {
+  if (!currentPreviewQuestion.value) return 0
+  const index = previewQuestions.value.findIndex(q => q.id === currentPreviewQuestion.value.id)
+  return index + 1
+}
+
+const prevPreviewQuestion = () => {
+  const index = previewQuestions.value.findIndex(q => q.id === currentPreviewQuestion.value?.id)
+  if (index > 0) {
+    currentPreviewQuestion.value = previewQuestions.value[index - 1]
+  }
+}
+
+const nextPreviewQuestion = () => {
+  const index = previewQuestions.value.findIndex(q => q.id === currentPreviewQuestion.value?.id)
+  if (index < previewQuestions.value.length - 1) {
+    currentPreviewQuestion.value = previewQuestions.value[index + 1]
+  }
+}
+
+const isFirstPreviewQuestion = computed(() => {
+  if (!currentPreviewQuestion.value) return true
+  const index = previewQuestions.value.findIndex(q => q.id === currentPreviewQuestion.value.id)
+  return index === 0
+})
+
+const isLastPreviewQuestion = computed(() => {
+  if (!currentPreviewQuestion.value) return true
+  const index = previewQuestions.value.findIndex(q => q.id === currentPreviewQuestion.value.id)
+  return index === previewQuestions.value.length - 1
+})
+
+const getTypeName = (type) => {
+  return typeMap[type] || type
+}
+
+const parsePreviewOptions = (q) => {
+  const options = parseOptions(q.options)
+  return Object.entries(options).map(([key, label]) => ({ key, label }))
+}
+
 const parseOptions = (options) => {
-  try { return options ? JSON.parse(options) : {} } catch { return {} }
+  try {
+    const parsed = JSON.parse(options)
+    // 如果是数组格式，转换为对象格式
+    if (Array.isArray(parsed)) {
+      const result = {}
+      parsed.forEach(item => {
+        if (item.key && item.content) {
+          result[item.key] = item.content
+        }
+      })
+      return result
+    }
+    return parsed
+  } catch {
+    return {}
+  }
 }
 
 const params = reactive({ subjectId: null, status: '', keyword: '' })
 const searchKeyword = ref('')
 const searchType = ref('')
+const batchScoreType = ref('')
+const batchScoreValue = ref(null)
+
+// 维护一个独立的已选题ID集合（不依赖表格选择状态）
+const selectedQuestionIds = ref(new Set())
 
 const form = reactive({
   id: null,
@@ -385,6 +598,25 @@ const updateScore = (id, score) => {
   questionScores[id] = score
 }
 
+const applyBatchScore = () => {
+  if (!batchScoreType.value) {
+    ElMessage.warning('请选择题型')
+    return
+  }
+  if (!batchScoreValue.value) {
+    ElMessage.warning('请输入分值')
+    return
+  }
+  
+  selectedQuestions.value.forEach(q => {
+    if (q.type === batchScoreType.value) {
+      questionScores[q.id] = batchScoreValue.value
+    }
+  })
+  
+  ElMessage.success('批量设置成功')
+}
+
 const isSelected = (id) => {
   return selectedQuestions.value.some(q => q.id === id)
 }
@@ -410,6 +642,7 @@ const loadQuestions = async () => {
     ElMessage.warning('请先选择科目')
     return
   }
+  
   questionsLoading.value = true
   try {
     const res = await questionApi.list({ 
@@ -422,9 +655,21 @@ const loadQuestions = async () => {
       questions.value = res.data
       res.data.forEach(q => {
         if (questionScores[q.id] === undefined) {
-          questionScores[q.id] = q.score || 5
+          // 确保分值是数字类型，处理字符串的情况
+          const scoreValue = typeof q.score === 'string' ? parseInt(q.score, 10) : q.score
+          questionScores[q.id] = scoreValue || 5
         }
       })
+      
+      // 等待表格渲染完成后设置勾选状态
+      await nextTick()
+      if (questionTableRef.value) {
+        // 逐个设置勾选状态
+        questions.value.forEach(q => {
+          const isSelected = selectedQuestionIds.value.has(q.id)
+          questionTableRef.value.toggleRowSelection(q, isSelected)
+        })
+      }
     }
   } catch (e) { console.error(e) } finally { questionsLoading.value = false }
 }
@@ -435,7 +680,11 @@ const handleSubjectChange = () => {
 }
 
 const handleSelectionChange = (selection) => {
+  // 更新表格选中的题目
   selectedQuestions.value = selection
+  
+  // 更新独立的ID集合
+  selection.forEach(q => selectedQuestionIds.value.add(q.id))
 }
 
 const clearSelection = () => {
@@ -443,12 +692,14 @@ const clearSelection = () => {
     questionTableRef.value.clearSelection()
   }
   selectedQuestions.value = []
+  selectedQuestionIds.value.clear()
 }
 
 const handleCreate = () => {
   isEdit.value = false
   Object.assign(form, { id: null, title: '', subjectId: null, totalScore: 100, passScore: 60, duration: 120, questionIds: [] })
   selectedQuestions.value = []
+  selectedQuestionIds.value.clear()
   questions.value = []
   Object.keys(questionScores).forEach(key => delete questionScores[key])
   dialogVisible.value = true
@@ -457,34 +708,62 @@ const handleCreate = () => {
 const handleEdit = async (row) => {
   isEdit.value = true
   Object.assign(form, row)
+  dialogVisible.value = true
+  
   try {
+    // 清空之前的选择
+    selectedQuestionIds.value.clear()
+    
+    // 先获取已选题目
     const res = await paperApi.getQuestions(row.id)
     if (res.code === 200) {
       selectedQuestions.value = res.data
+      
+      // 初始化独立的ID集合和分值（确保转换为数字类型）
       res.data.forEach(q => {
-        questionScores[q.id] = q.score || 5
+        selectedQuestionIds.value.add(q.id)
+        // 确保分值是数字类型，处理字符串的情况
+        const scoreValue = typeof q.score === 'string' ? parseInt(q.score, 10) : q.score
+        questionScores[q.id] = scoreValue || 5
       })
     }
+    // 加载题目并自动勾选
     await loadQuestions()
   } catch (e) { console.error(e) }
-  dialogVisible.value = true
 }
 
 const handleSubmit = async () => {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
   
-  if (selectedQuestions.value.length === 0) {
+  if (selectedQuestionIds.value.size === 0) {
     ElMessage.warning('请至少选择一道题目')
     return
   }
 
-  const questionIds = selectedQuestions.value.map(q => q.id)
+  // 使用独立的ID集合获取所有已选题目的ID
+  const questionIds = Array.from(selectedQuestionIds.value)
   
-  const questionScoreList = selectedQuestions.value.map(q => ({
-    questionId: q.id,
-    score: questionScores[q.id] || q.score || 5
-  }))
+  // 构建题目分值列表
+  const questionScoreList = []
+  
+  // 先从当前表格中的已选题目获取分值
+  selectedQuestions.value.forEach(q => {
+    questionScoreList.push({
+      questionId: q.id,
+      score: questionScores[q.id] || q.score || 5
+    })
+  })
+  
+  // 补充不在当前表格中的已选题目（使用默认分值）
+  selectedQuestionIds.value.forEach(id => {
+    if (!selectedQuestions.value.some(q => q.id === id)) {
+      questionScoreList.push({
+        questionId: id,
+        score: questionScores[id] || 5
+      })
+    }
+  })
 
   // 将 reactive 对象转换为普通对象
   const paperData = {
@@ -523,6 +802,7 @@ const handlePreview = async (row) => {
     if (res.code === 200) {
       previewQuestions.value = res.data
       previewTitle.value = row.title
+      currentPreviewQuestion.value = res.data[0] || null
       previewDialogVisible.value = true
     }
   } catch (e) { console.error(e) }
@@ -568,13 +848,17 @@ const handleGeneratePaper = async () => {
   }
   
   try {
+    const totalScore = generatedTotalScore.value
+    const passScore = Math.round(totalScore * (generateForm.passRate / 100))
+    
     const res = await questionApi.generatePaper({
       title: generateForm.title,
       subjectId: generateForm.subjectId,
-      totalScore: generateForm.totalScore,
+      totalScore: totalScore,
       duration: generateForm.duration,
-      passScore: generateForm.passScore,
-      questionCountMap: generateForm.questionCounts
+      passScore: passScore,
+      questionCountMap: generateForm.questionCounts,
+      questionScoreMap: generateForm.questionScores
     })
     if (res.code === 200) {
       generateResult.value = res.data
@@ -614,6 +898,21 @@ onMounted(() => { loadData(); loadSubjects() })
 .toolbar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
 .question-selector { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
 .selector-toolbar { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+.batch-score-setting {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: #fef3c7;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  
+  .setting-title {
+    font-size: 14px;
+    color: #92400e;
+    font-weight: 500;
+  }
+}
 .subject-tip { font-size: 12px; color: #666; background: #f0f0f0; padding: 4px 12px; border-radius: 4px; }
 .selected-info { 
   margin-top: 12px; 
@@ -626,16 +925,206 @@ onMounted(() => { loadData(); loadSubjects() })
 .info-row { display: flex; gap: 24px; margin-bottom: 8px; }
 .type-stats { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: #666; }
 .empty-hint { padding: 40px; text-align: center; }
-.preview-container { max-height: 60vh; overflow-y: auto; }
-.preview-section { margin-bottom: 24px; }
-.preview-section .section-header { font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #ef4444; }
-.preview-question { padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
-.preview-question .question-header { display: flex; gap: 8px; margin-bottom: 8px; }
-.preview-question .question-number { font-weight: 600; color: #ef4444; }
-.preview-question .question-content { flex: 1; color: #1e293b; line-height: 1.6; }
-.preview-question .question-score { color: #ef4444; font-weight: 500; white-space: nowrap; }
-.preview-question .question-options { padding-left: 24px; }
-.preview-question .option-item { padding: 6px 0; color: #475569; line-height: 1.5; }
+/* 学生视角预览样式 */
+.exam-preview-container {
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.exam-preview-header {
+  height: 64px;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.exam-preview-header .header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.exam-preview-header .header-left h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.exam-meta {
+  display: flex;
+  gap: 16px;
+}
+
+.exam-meta .meta-item {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.exam-preview-body {
+  display: flex;
+  flex: 1;
+  padding: 20px;
+  gap: 20px;
+}
+
+.exam-preview-body .question-nav {
+  width: 240px;
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  height: fit-content;
+  position: sticky;
+  top: 88px;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+}
+
+.exam-preview-body .nav-section {
+  margin-bottom: 16px;
+}
+
+.exam-preview-body .nav-section .section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 10px;
+}
+
+.exam-preview-body .question-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.exam-preview-body .nav-question-item {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #f1f5f9;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.exam-preview-body .nav-question-item:hover {
+  background: #e2e8f0;
+}
+
+.exam-preview-body .nav-question-item.current {
+  background: #ef4444;
+  color: white;
+}
+
+.exam-preview-body .nav-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.exam-preview-body .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.exam-preview-body .legend-item .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #cbd5e1;
+}
+
+.exam-preview-body .legend-item .dot.current {
+  background: #ef4444;
+}
+
+.exam-preview-body .legend-item .dot.unanswered {
+  background: #cbd5e1;
+}
+
+.exam-preview-body .question-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.exam-preview-body .question-card {
+  background: white;
+  border-radius: 12px;
+  padding: 28px;
+}
+
+.exam-preview-body .question-card .question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.exam-preview-body .question-card .question-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.exam-preview-body .question-card .question-score {
+  font-size: 14px;
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.exam-preview-body .question-card .question-number {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.exam-preview-body .question-card .question-text {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #1e293b;
+  margin-bottom: 24px;
+  white-space: pre-wrap;
+}
+
+.exam-preview-body .question-card .question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.exam-preview-body .question-card .question-input {
+  margin-top: 16px;
+}
+
+.exam-preview-body .question-card .question-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.exam-preview-body .question-card .question-actions .progress-text {
+  font-size: 14px;
+  color: #64748b;
+}
 
 /* 自动组卷相关样式 */
 .result-summary {
@@ -692,8 +1181,8 @@ onMounted(() => { loadData(); loadSubjects() })
 
 .question-count-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
   
   .count-item {
     display: flex;
@@ -706,8 +1195,23 @@ onMounted(() => { loadData(); loadSubjects() })
       font-weight: 500;
     }
     
+    .count-score-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      .el-input {
+        width: 80px;
+      }
+      
+      .score-label {
+        font-size: 14px;
+        color: #666;
+      }
+    }
+    
     :deep(.el-input__wrapper) {
-      width: 120px;
+      width: 100%;
     }
   }
 }

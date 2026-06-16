@@ -17,7 +17,7 @@
 
       <el-table :data="tableData" v-loading="loading" stripe>
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="班级名称" />
+        <el-table-column prop="className" label="班级名称" />
         <el-table-column prop="code" label="班级代码" width="150" />
         <el-table-column prop="inviteCode" label="群号" width="120">
           <template #default="{ row }">
@@ -112,7 +112,9 @@ const loadDepartments = async () => {
 
 const handleCreate = () => {
   isEdit.value = false
-  Object.assign(form, { id: null, name: '', code: '', departmentId: null, grade: '' })
+  // 自动生成班级代码（格式：CLS+8位数字）
+  const code = 'CLS' + Math.floor(Math.random() * 90000000 + 10000000)
+  Object.assign(form, { id: null, name: '', code: code, departmentId: null, grade: '' })
   dialogVisible.value = true
 }
 

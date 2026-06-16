@@ -399,18 +399,26 @@ public class ExamQuestionService extends ServiceImpl<ExamQuestionMapper, ExamQue
      */
     @Transactional
     public Map<String, Object> autoGeneratePaper(String title, Long subjectId, 
-            Map<String, Integer> questionCountMap, Integer totalScore, 
-            Integer duration, Integer passScore,
+            Map<String, Integer> questionCountMap, Map<String, Integer> questionScoreMap,
+            Integer totalScore, Integer duration, Integer passScore,
             Long creatorId, String knowledgePointIds) {
         Map<String, Object> result = new HashMap<>();
         
         List<ExamQuestion> selectedQuestions = new ArrayList<>();
+        Map<String, Integer> typeScores = new HashMap<>();
         
         for (Map.Entry<String, Integer> entry : questionCountMap.entrySet()) {
             String type = entry.getKey();
             Integer count = entry.getValue();
             
             if (count == null || count <= 0) continue;
+            
+            // 获取该题型的分值，如果没有指定则使用默认值
+            Integer scorePerQuestion = questionScoreMap != null ? questionScoreMap.get(type) : null;
+            if (scorePerQuestion == null || scorePerQuestion <= 0) {
+                scorePerQuestion = getDefaultScore(type);
+            }
+            typeScores.put(type, scorePerQuestion);
             
             List<ExamQuestion> questions = randomQuestions(subjectId, type, null, count, knowledgePointIds);
             if (questions.size() < count) {
@@ -419,16 +427,12 @@ public class ExamQuestionService extends ServiceImpl<ExamQuestionMapper, ExamQue
                         getTypeName(type), count, questions.size()));
                 return result;
             }
+            
+            // 为每道题设置分值
+            for (ExamQuestion q : questions) {
+                q.setScore(scorePerQuestion);
+            }
             selectedQuestions.addAll(questions);
-        }
-        
-        // 计算总分并调整分值
-        int totalSelectedScore = selectedQuestions.size() * 5; // 默认每题5分
-        double scoreRatio = totalScore != null && totalScore > 0 ? 
-                (double) totalScore / totalSelectedScore : 1.0;
-        
-        for (ExamQuestion q : selectedQuestions) {
-            q.setScore((int) Math.round(q.getScore() * scoreRatio));
         }
         
         // 创建试卷
@@ -443,6 +447,7 @@ public class ExamQuestionService extends ServiceImpl<ExamQuestionMapper, ExamQue
         ObjectMapper mapper = new ObjectMapper();
         try {
             List<Map<String, Object>> paperQuestions = new ArrayList<>();
+            StringBuilder scoresBuilder = new StringBuilder();
             int index = 1;
             for (ExamQuestion q : selectedQuestions) {
                 Map<String, Object> pq = new HashMap<>();
@@ -451,8 +456,13 @@ public class ExamQuestionService extends ServiceImpl<ExamQuestionMapper, ExamQue
                 pq.put("score", q.getScore());
                 pq.put("order", index++);
                 paperQuestions.add(pq);
+                
+                // 保存分值信息
+                if (scoresBuilder.length() > 0) scoresBuilder.append(",");
+                scoresBuilder.append(q.getId()).append(":").append(q.getScore());
             }
             paper.setQuestionIds(mapper.writeValueAsString(paperQuestions));
+            paper.setQuestionScores(scoresBuilder.toString());
             paper.setQuestionCount(paperQuestions.size());
             paper.setTotalScore((int) paperQuestions.stream()
                     .mapToInt(p -> (Integer) p.get("score"))
@@ -486,5 +496,19 @@ public class ExamQuestionService extends ServiceImpl<ExamQuestionMapper, ExamQue
         typeMap.put("FILL_BLANK", "填空题");
         typeMap.put("ESSAY", "简答题");
         return typeMap.getOrDefault(type, type);
+    }
+    
+    /**
+     * 获取题型默认分值
+     */
+    private int getDefaultScore(String type) {
+        Map<String, Integer> scoreMap = new HashMap<>();
+        scoreMap.put("SINGLE_CHOICE", 5);
+        scoreMap.put("MULTIPLE_CHOICE", 10);
+        scoreMap.put("JUDGMENT", 5);
+        scoreMap.put("FILL_BLANK", 10);
+        scoreMap.put("ESSAY", 20);
+        scoreMap.put("PROGRAMMING", 25);
+        return scoreMap.getOrDefault(type, 5);
     }
 }

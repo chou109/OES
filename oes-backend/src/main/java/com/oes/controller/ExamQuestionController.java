@@ -105,9 +105,12 @@ public class ExamQuestionController {
         @SuppressWarnings("unchecked")
         Map<String, Integer> questionCountMap = (Map<String, Integer>) params.get("questionCountMap");
         
+        @SuppressWarnings("unchecked")
+        Map<String, Integer> questionScoreMap = (Map<String, Integer>) params.get("questionScoreMap");
+        
         String token = request.getHeader("Authorization").replace("Bearer ", "");
         Long creatorId = jwtUtils.getUserIdFromToken(token);
         
-        return R.ok(examQuestionService.autoGeneratePaper(title, subjectId, questionCountMap, totalScore, duration, passScore, creatorId, knowledgePointIds));
+        return R.ok(examQuestionService.autoGeneratePaper(title, subjectId, questionCountMap, questionScoreMap, totalScore, duration, passScore, creatorId, knowledgePointIds));
     }
 }

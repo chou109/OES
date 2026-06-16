@@ -104,14 +104,19 @@ public class ExamExamRecordController {
                     Map<String, Object> answerInfo = new HashMap<>();
                     answerInfo.put("answer", answer.getAnswer());
                     answerInfo.put("isCorrect", answer.getIsCorrect());
-                    answerInfo.put("score", answer.getAutoScore());
+                    answerInfo.put("score", answer.getScore() != null ? answer.getScore() : answer.getAutoScore());
 
                     ExamQuestion question = examQuestionService.getById(answer.getQuestionId());
                     if (question != null) {
                         answerInfo.put("correctAnswer", question.getAnswer());
-                        // 判断是否为主观题且未评分
-                        if (isSubjective(question.getType()) && (answer.getAutoScore() == null || answer.getAutoScore() == 0)) {
-                            hasSubjectiveUngraded = true;
+                        // 判断是否为主观题且未评分（需要检查autoScore和manualScore）
+                        if (isSubjective(question.getType())) {
+                            Integer totalScore = answer.getScore() != null ? answer.getScore() : 
+                                    (answer.getAutoScore() != null ? answer.getAutoScore() : 0) + 
+                                    (answer.getManualScore() != null ? answer.getManualScore() : 0);
+                            if (totalScore == 0) {
+                                hasSubjectiveUngraded = true;
+                            }
                         }
                     }
                     answerMap.put(answer.getQuestionId(), answerInfo);
@@ -123,26 +128,37 @@ public class ExamExamRecordController {
                 boolean allowView = false;
                 
                 // 优先使用新的 allowViewAfterExam 字段
+                System.out.println("========== 调试考后查看权限 ==========");
+                System.out.println("exam.getAllowViewAfterExam(): " + exam.getAllowViewAfterExam());
+                System.out.println("exam.getAntiCheatConfig(): " + exam.getAntiCheatConfig());
+                
                 if (exam.getAllowViewAfterExam() != null) {
                     allowView = exam.getAllowViewAfterExam() == 1;
+                    System.out.println("使用 allowViewAfterExam 字段，值为: " + exam.getAllowViewAfterExam() + ", allowView: " + allowView);
                 } else if (exam.getAntiCheatConfig() != null) {
                     // 兼容旧版本：从防作弊配置中读取
                     try {
                         Map<String, Object> config = objectMapper.readValue(exam.getAntiCheatConfig(), Map.class);
                         if (config != null && config.containsKey("allowViewAfterExam")) {
                             allowView = Boolean.TRUE.equals(config.get("allowViewAfterExam"));
+                            System.out.println("使用 antiCheatConfig 配置，allowViewAfterExam: " + config.get("allowViewAfterExam") + ", allowView: " + allowView);
                         }
                     } catch (Exception e) {
                         allowView = false;
+                        System.out.println("解析 antiCheatConfig 失败: " + e.getMessage());
                     }
                 } else {
                     // 默认不允许查看
                     allowView = false;
+                    System.out.println("未设置允许查看权限，默认不允许");
                 }
                 // 如果有主观题未评分，也不能查看详细答案
+                System.out.println("hasSubjectiveUngraded: " + hasSubjectiveUngraded);
                 if (hasSubjectiveUngraded) {
                     allowView = false;
+                    System.out.println("存在未评分主观题，设置 allowView 为 false");
                 }
+                System.out.println("最终 allowView: " + allowView);
                 result.put("canViewPaper", allowView);
                 result.put("studentScore", existRecord.getScore());
 
