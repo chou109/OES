@@ -7,13 +7,15 @@
 
     <div class="card">
       <div class="toolbar">
-        <el-select v-model="params.subjectId" placeholder="选择科目" style="width: 180px" clearable @change="loadData">
-          <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
-        </el-select>
-        <el-select v-model="params.mastered" placeholder="选择状态" style="width: 150px" clearable @change="loadData">
-          <el-option :value="0" label="未学会" />
-          <el-option :value="1" label="已学会" />
-        </el-select>
+        <div class="toolbar-left">
+          <el-select v-model="params.subjectId" placeholder="选择科目" class="subject-select" clearable @change="loadData">
+            <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
+          </el-select>
+          <el-select v-model="params.mastered" placeholder="选择状态" class="status-select" clearable @change="loadData">
+            <el-option :value="0" label="未学会" />
+            <el-option :value="1" label="已学会" />
+          </el-select>
+        </div>
         <el-button type="danger" @click="loadData">搜索</el-button>
       </div>
 
@@ -261,12 +263,85 @@ const handleToggleMastered = async (row) => {
   }
 }
 
-onMounted(() => { loadData(); loadSubjects() })
+onMounted(() => { 
+  loadData()
+  loadSubjects()
+})
 </script>
 
 <style lang="scss" scoped>
-.wrong-questions { max-width: 1200px; }
-.toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
+.wrong-questions {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.page-header {
+  padding: 0 8px;
+  margin-bottom: 20px;
+  
+  h2 {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.3;
+  }
+  
+  p {
+    margin-top: 6px;
+    font-size: clamp(13px, 3vw, 14px);
+    color: #64748b;
+    line-height: 1.5;
+  }
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.toolbar {
+  position: sticky;
+  top: 24px;
+  z-index: 100;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+  padding: 16px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  
+  .toolbar-left {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+  }
+  
+  .subject-select {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+  
+  .status-select {
+    width: 140px;
+    flex: 0 0 auto;
+  }
+  
+  .el-button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}
 
 .progress-bar {
   position: relative;
@@ -274,11 +349,13 @@ onMounted(() => { loadData(); loadSubjects() })
   background: #f1f5f9;
   border-radius: 10px;
   overflow: hidden;
+  
   .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #22c55e, #16a34a);
     transition: width 0.3s ease;
   }
+  
   .progress-text {
     position: absolute;
     top: 0;
@@ -292,23 +369,201 @@ onMounted(() => { loadData(); loadSubjects() })
   }
 }
 
-.answer-content { padding: 20px 0; }
-.question-type { background: #f1f5f9; padding: 4px 12px; border-radius: 6px; font-size: 13px; color: #64748b; display: inline-block; margin-bottom: 16px; }
-.question-text { font-size: 16px; line-height: 1.8; color: #1e293b; margin-bottom: 24px; }
-.answer-item { margin-bottom: 12px; font-size: 14px; }
-.answer-item .label { color: #64748b; }
-.answer-item .wrong-text { color: #dc2626; font-weight: 500; }
-.answer-item .correct-text { color: #22c55e; font-weight: 500; }
+.answer-content { 
+  padding: 20px 0; 
+}
 
-.practice-content { padding: 20px 0; }
-.question-options { display: flex; flex-direction: column; gap: 12px; }
-.question-options :deep(.el-radio), .question-options :deep(.el-checkbox) { padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; width: 100%; margin-right: 0; }
-.question-input { margin-bottom: 20px; }
+.question-type { 
+  background: #f1f5f9; 
+  padding: 4px 12px; 
+  border-radius: 6px; 
+  font-size: clamp(12px, 2.5vw, 13px); 
+  color: #64748b; 
+  display: inline-block; 
+  margin-bottom: 16px; 
+}
 
-.result-panel { margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 12px; }
-.result-badge { display: inline-block; padding: 4px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; margin-bottom: 12px; }
-.result-badge.correct { background: #dcfce7; color: #16a34a; }
-.result-badge.wrong { background: #fee2e2; color: #dc2626; }
-.correct-answer-display { margin-bottom: 12px; font-size: 14px; }
-.analysis { font-size: 14px; color: #475569; line-height: 1.6; }
+.question-text { 
+  font-size: clamp(14px, 3vw, 16px); 
+  line-height: 1.8; 
+  color: #1e293b; 
+  margin-bottom: 24px; 
+}
+
+.answer-item { 
+  margin-bottom: 12px; 
+  font-size: clamp(13px, 2.8vw, 14px); 
+}
+
+.answer-item .label { 
+  color: #64748b; 
+}
+
+.answer-item .wrong-text { 
+  color: #dc2626; 
+  font-weight: 500; 
+}
+
+.answer-item .correct-text { 
+  color: #22c55e; 
+  font-weight: 500; 
+}
+
+.practice-content { 
+  padding: 20px 0; 
+}
+
+.question-options { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
+}
+
+.question-options :deep(.el-radio), 
+.question-options :deep(.el-checkbox) { 
+  padding: 12px 16px; 
+  border: 1px solid #e2e8f0; 
+  border-radius: 10px; 
+  width: 100%; 
+  margin-right: 0; 
+}
+
+.question-input { 
+  margin-bottom: 20px; 
+}
+
+.result-panel { 
+  margin-top: 20px; 
+  padding: 16px; 
+  background: #f8fafc; 
+  border-radius: 12px; 
+}
+
+.result-badge { 
+  display: inline-block; 
+  padding: 4px 12px; 
+  border-radius: 6px; 
+  font-size: clamp(13px, 3vw, 14px); 
+  font-weight: 600; 
+  margin-bottom: 12px; 
+}
+
+.result-badge.correct { 
+  background: #dcfce7; 
+  color: #16a34a; 
+}
+
+.result-badge.wrong { 
+  background: #fee2e2; 
+  color: #dc2626; 
+}
+
+.correct-answer-display { 
+  margin-bottom: 12px; 
+  font-size: clamp(13px, 2.8vw, 14px); 
+}
+
+.analysis { 
+  font-size: clamp(13px, 2.8vw, 14px); 
+  color: #475569; 
+  line-height: 1.6; 
+}
+
+@media screen and (max-width: 992px) {
+  .card {
+    padding: 16px;
+  }
+  
+  .toolbar {
+    gap: 10px;
+  }
+  
+  }
+
+@media screen and (max-width: 768px) {
+  .wrong-questions {
+    padding: 0 4px;
+  }
+  
+  .page-header {
+    padding: 0 4px;
+  }
+  
+  .card {
+    padding: 14px;
+    overflow-x: auto;
+  }
+  
+  .toolbar {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .toolbar .toolbar-left {
+    gap: 8px;
+  }
+  
+  .toolbar .subject-select {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .toolbar .status-select {
+    width: auto;
+    min-width: 100px;
+  }
+  
+  .toolbar .el-button {
+    white-space: nowrap;
+  }
+  
+  .progress-bar {
+    height: 18px;
+    
+    .progress-text {
+      font-size: 11px;
+      line-height: 18px;
+    }
+  }
+  
+  .question-options :deep(.el-radio), 
+  .question-options :deep(.el-checkbox) { 
+    padding: 10px 12px; 
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .card {
+    padding: 12px;
+  }
+  
+  .question-options :deep(.el-radio), 
+  .question-options :deep(.el-checkbox) { 
+    padding: 8px 10px; 
+    font-size: 13px;
+  }
+  
+  .result-panel {
+    padding: 12px;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .card {
+    padding: 10px;
+  }
+  
+  .question-text {
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  
+  .answer-item {
+    margin-bottom: 10px;
+  }
+  
+  .result-panel {
+    padding: 10px;
+  }
+}
 </style>

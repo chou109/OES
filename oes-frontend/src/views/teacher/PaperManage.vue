@@ -894,10 +894,62 @@ onMounted(() => { loadData(); loadSubjects() })
 </script>
 
 <style lang="scss" scoped>
-.paper-manage { max-width: 1400px; }
-.toolbar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-.question-selector { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
-.selector-toolbar { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+.paper-manage {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.page-header {
+  padding: 0 8px;
+  margin-bottom: 20px;
+  
+  h2 {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.3;
+  }
+  
+  p {
+    margin-top: 6px;
+    font-size: clamp(13px, 3vw, 14px);
+    color: #64748b;
+    line-height: 1.5;
+  }
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.question-selector { 
+  border: 1px solid #e2e8f0; 
+  border-radius: 12px; 
+  padding: 16px; 
+}
+
+.selector-toolbar { 
+  display: flex; 
+  gap: 12px; 
+  margin-bottom: 12px; 
+  align-items: center; 
+  flex-wrap: wrap; 
+}
+
 .batch-score-setting {
   display: flex;
   gap: 12px;
@@ -906,25 +958,52 @@ onMounted(() => { loadData(); loadSubjects() })
   background: #fef3c7;
   border-radius: 8px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
   
   .setting-title {
-    font-size: 14px;
+    font-size: clamp(13px, 2.8vw, 14px);
     color: #92400e;
     font-weight: 500;
   }
 }
-.subject-tip { font-size: 12px; color: #666; background: #f0f0f0; padding: 4px 12px; border-radius: 4px; }
+
+.subject-tip { 
+  font-size: clamp(11px, 2.5vw, 12px); 
+  color: #666; 
+  background: #f0f0f0; 
+  padding: 4px 12px; 
+  border-radius: 4px; 
+}
+
 .selected-info { 
   margin-top: 12px; 
   padding: 12px; 
   background: #f8fafc; 
   border-radius: 8px; 
-  font-size: 14px; 
+  font-size: clamp(13px, 2.8vw, 14px); 
   color: #475569; 
 }
-.info-row { display: flex; gap: 24px; margin-bottom: 8px; }
-.type-stats { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: #666; }
-.empty-hint { padding: 40px; text-align: center; }
+
+.info-row { 
+  display: flex; 
+  gap: 24px; 
+  margin-bottom: 8px; 
+  flex-wrap: wrap;
+}
+
+.type-stats { 
+  display: flex; 
+  gap: 16px; 
+  flex-wrap: wrap; 
+  font-size: clamp(11px, 2.5vw, 12px); 
+  color: #666; 
+}
+
+.empty-hint { 
+  padding: 40px; 
+  text-align: center; 
+}
+
 /* 学生视角预览样式 */
 .exam-preview-container {
   max-height: 85vh;
@@ -953,7 +1032,7 @@ onMounted(() => { loadData(); loadSubjects() })
 }
 
 .exam-preview-header .header-left h2 {
-  font-size: 18px;
+  font-size: clamp(16px, 3vw, 18px);
   font-weight: 600;
   margin: 0;
 }
@@ -961,10 +1040,11 @@ onMounted(() => { loadData(); loadSubjects() })
 .exam-meta {
   display: flex;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
 .exam-meta .meta-item {
-  font-size: 13px;
+  font-size: clamp(12px, 2.5vw, 13px);
   color: #64748b;
 }
 
@@ -985,6 +1065,7 @@ onMounted(() => { loadData(); loadSubjects() })
   top: 88px;
   max-height: calc(100vh - 150px);
   overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .exam-preview-body .nav-section {
@@ -992,7 +1073,7 @@ onMounted(() => { loadData(); loadSubjects() })
 }
 
 .exam-preview-body .nav-section .section-title {
-  font-size: 13px;
+  font-size: clamp(12px, 2.5vw, 13px);
   font-weight: 600;
   color: #475569;
   margin-bottom: 10px;
@@ -1040,7 +1121,7 @@ onMounted(() => { loadData(); loadSubjects() })
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: clamp(11px, 2.5vw, 12px);
   color: #64748b;
 }
 
@@ -1075,6 +1156,8 @@ onMounted(() => { loadData(); loadSubjects() })
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .exam-preview-body .question-card .question-info {
@@ -1084,18 +1167,18 @@ onMounted(() => { loadData(); loadSubjects() })
 }
 
 .exam-preview-body .question-card .question-score {
-  font-size: 14px;
+  font-size: clamp(13px, 2.8vw, 14px);
   color: #ef4444;
   font-weight: 600;
 }
 
 .exam-preview-body .question-card .question-number {
-  font-size: 14px;
+  font-size: clamp(13px, 2.8vw, 14px);
   color: #64748b;
 }
 
 .exam-preview-body .question-card .question-text {
-  font-size: 16px;
+  font-size: clamp(14px, 3vw, 16px);
   line-height: 1.8;
   color: #1e293b;
   margin-bottom: 24px;
@@ -1122,7 +1205,7 @@ onMounted(() => { loadData(); loadSubjects() })
 }
 
 .exam-preview-body .question-card .question-actions .progress-text {
-  font-size: 14px;
+  font-size: clamp(13px, 2.8vw, 14px);
   color: #64748b;
 }
 
@@ -1156,7 +1239,7 @@ onMounted(() => { loadData(); loadSubjects() })
     flex: 1;
     
     .result-message {
-      font-size: 16px;
+      font-size: clamp(14px, 3vw, 16px);
       font-weight: 600;
       color: #1a1a2e;
       margin: 0 0 12px 0;
@@ -1165,9 +1248,10 @@ onMounted(() => { loadData(); loadSubjects() })
     .result-stats {
       display: flex;
       gap: 24px;
+      flex-wrap: wrap;
       
       .stat-item {
-        font-size: 14px;
+        font-size: clamp(13px, 2.8vw, 14px);
         color: #666;
         
         strong {
@@ -1190,7 +1274,7 @@ onMounted(() => { loadData(); loadSubjects() })
     gap: 8px;
     
     label {
-      font-size: 14px;
+      font-size: clamp(13px, 2.8vw, 14px);
       color: #333;
       font-weight: 500;
     }
@@ -1205,7 +1289,7 @@ onMounted(() => { loadData(); loadSubjects() })
       }
       
       .score-label {
-        font-size: 14px;
+        font-size: clamp(12px, 2.5vw, 14px);
         color: #666;
       }
     }
@@ -1213,6 +1297,162 @@ onMounted(() => { loadData(); loadSubjects() })
     :deep(.el-input__wrapper) {
       width: 100%;
     }
+  }
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 992px) {
+  .card {
+    padding: 16px;
+    overflow-x: auto;
+  }
+  
+  .toolbar {
+    gap: 10px;
+  }
+  
+  .exam-preview-body {
+    flex-direction: column;
+  }
+  
+  .exam-preview-body .question-nav {
+    width: 100%;
+    position: static;
+    max-height: none;
+  }
+  
+  .exam-preview-body .question-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .paper-manage {
+    padding: 0 4px;
+  }
+  
+  .page-header {
+    padding: 0 4px;
+  }
+  
+  .card {
+    padding: 14px;
+  }
+  
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .toolbar .el-select,
+  .toolbar .el-input {
+    width: 100%;
+  }
+  
+  .selector-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .selector-toolbar .el-select,
+  .selector-toolbar .el-input {
+    width: 100%;
+  }
+  
+  .batch-score-setting {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .batch-score-setting .el-select,
+  .batch-score-setting .el-input-number {
+    width: 100%;
+  }
+  
+  .info-row {
+    gap: 16px;
+  }
+  
+  .question-count-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .exam-preview-header {
+    padding: 0 16px;
+    height: 56px;
+  }
+  
+  .exam-preview-body {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .exam-preview-body .question-card {
+    padding: 16px;
+  }
+  
+  .exam-preview-body .question-card .question-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .card {
+    padding: 12px;
+  }
+  
+  .question-selector {
+    padding: 12px;
+  }
+  
+  .exam-preview-body .question-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  
+  .exam-preview-body .nav-question-item {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+  
+  .exam-preview-body .question-card {
+    padding: 12px;
+  }
+  
+  .exam-preview-body .question-card .question-text {
+    margin-bottom: 16px;
+  }
+  
+  .exam-preview-body .question-card .question-actions {
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .card {
+    padding: 10px;
+  }
+  
+  .question-selector {
+    padding: 10px;
+  }
+  
+  .exam-preview-header {
+    padding: 0 12px;
+  }
+  
+  .exam-preview-body .question-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .exam-preview-body .question-card {
+    padding: 10px;
   }
 }
 </style>

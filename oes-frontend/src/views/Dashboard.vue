@@ -7,159 +7,135 @@
     </div>
 
     <!-- 统计卡片 - 三端共用 -->
-    <el-row :gutter="20" style="margin-bottom: 24px;">
+    <div class="stats-container">
       <!-- 管理员统计 -->
       <template v-if="userInfo.role === 'ADMIN'">
-        <el-col :span="6">
-          <div class="stat-card admin-stat cursor-pointer" @click="goToUsers()">
-            <div class="stat-icon">
-              <el-icon><User /></el-icon>
-            </div>
-            <div class="stat-info">
-              <p class="stat-value">{{ stats.totalUsers }}</p>
-              <p class="stat-label">总用户数</p>
-            </div>
+        <div class="stat-card admin-stat cursor-pointer" @click="goToUsers()">
+          <div class="stat-icon">
+            <el-icon><User /></el-icon>
           </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-card admin-stat cursor-pointer" @click="goToUsers('STUDENT')">
-            <div class="stat-icon">
-              <el-icon><OfficeBuilding /></el-icon>
-            </div>
-            <div class="stat-info">
-              <p class="stat-value">{{ stats.studentCount }}</p>
-              <p class="stat-label">学生数</p>
-            </div>
+          <div class="stat-info">
+            <p class="stat-value">{{ stats.totalUsers }}</p>
+            <p class="stat-label">总用户数</p>
           </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-card admin-stat cursor-pointer" @click="goToUsers('TEACHER')">
-            <div class="stat-icon">
-              <el-icon><User /></el-icon>
-            </div>
-            <div class="stat-info">
-              <p class="stat-value">{{ stats.teacherCount }}</p>
-              <p class="stat-label">教师数</p>
-            </div>
+        </div>
+        <div class="stat-card admin-stat cursor-pointer" @click="goToUsers('STUDENT')">
+          <div class="stat-icon">
+            <el-icon><OfficeBuilding /></el-icon>
           </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-card admin-stat cursor-pointer" @click="goToDepartments()">
-            <div class="stat-icon">
-              <el-icon><OfficeBuilding /></el-icon>
-            </div>
-            <div class="stat-info">
-              <p class="stat-value">{{ stats.departmentCount }}</p>
-              <p class="stat-label">院系数</p>
-            </div>
+          <div class="stat-info">
+            <p class="stat-value">{{ stats.studentCount }}</p>
+            <p class="stat-label">学生数</p>
           </div>
-        </el-col>
+        </div>
+        <div class="stat-card admin-stat cursor-pointer" @click="goToUsers('TEACHER')">
+          <div class="stat-icon">
+            <el-icon><User /></el-icon>
+          </div>
+          <div class="stat-info">
+            <p class="stat-value">{{ stats.teacherCount }}</p>
+            <p class="stat-label">教师数</p>
+          </div>
+        </div>
+        <div class="stat-card admin-stat cursor-pointer" @click="goToDepartments()">
+          <div class="stat-icon">
+            <el-icon><OfficeBuilding /></el-icon>
+          </div>
+          <div class="stat-info">
+            <p class="stat-value">{{ stats.departmentCount }}</p>
+            <p class="stat-label">院系数</p>
+          </div>
+        </div>
       </template>
 
       <!-- 教师统计 -->
       <template v-else-if="userInfo.role === 'TEACHER'">
-        <el-col :span="6">
-          <div class="stat-card teacher-stat" @click="goToClasses">
-            <div class="stat-icon">
-              <el-icon><Folder /></el-icon>
-            </div>
-            <div class="stat-info">
-              <p class="stat-value">{{ stats.classCount }}</p>
-              <p class="stat-label">班级数</p>
-            </div>
-            <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+        <div class="stat-card teacher-stat" @click="goToClasses">
+          <div class="stat-icon">
+            <el-icon><Folder /></el-icon>
           </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-card teacher-stat" @click="goToPapers">
-            <div class="stat-icon">
-              <el-icon><Ticket /></el-icon>
-            </div>
-            <div class="stat-info">
-              <p class="stat-value">{{ stats.paperCount }}</p>
-              <p class="stat-label">试卷数</p>
-            </div>
-            <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+          <div class="stat-info">
+            <p class="stat-value">{{ stats.classCount }}</p>
+            <p class="stat-label">班级数</p>
           </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-card teacher-stat" @click="goToQuestions">
-            <div class="stat-icon">
-              <el-icon><Edit /></el-icon>
-            </div>
-            <div class="stat-info">
-              <p class="stat-value">{{ stats.questionCount }}</p>
-              <p class="stat-label">题目数</p>
-            </div>
-            <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+          <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+        </div>
+        <div class="stat-card teacher-stat" @click="goToPapers">
+          <div class="stat-icon">
+            <el-icon><Ticket /></el-icon>
           </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-card teacher-stat" @click="goToExams">
-            <div class="stat-icon">
-              <el-icon><Calendar /></el-icon>
-            </div>
-            <div class="stat-info">
-              <p class="stat-value">{{ stats.examCount }}</p>
-              <p class="stat-label">考试数</p>
-            </div>
-            <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+          <div class="stat-info">
+            <p class="stat-value">{{ stats.paperCount }}</p>
+            <p class="stat-label">试卷数</p>
           </div>
-        </el-col>
+          <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+        </div>
+        <div class="stat-card teacher-stat" @click="goToQuestions">
+          <div class="stat-icon">
+            <el-icon><Edit /></el-icon>
+          </div>
+          <div class="stat-info">
+            <p class="stat-value">{{ stats.questionCount }}</p>
+            <p class="stat-label">题目数</p>
+          </div>
+          <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+        </div>
+        <div class="stat-card teacher-stat" @click="goToExams">
+          <div class="stat-icon">
+            <el-icon><Calendar /></el-icon>
+          </div>
+          <div class="stat-info">
+            <p class="stat-value">{{ stats.examCount }}</p>
+            <p class="stat-label">考试数</p>
+          </div>
+          <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+        </div>
       </template>
 
       <!-- 学生统计 -->
       <template v-else-if="userInfo.role === 'STUDENT'">
-        <el-col :span="6">
-          <div class="stat-card student-stat cursor-pointer" @click="goToExamList">
-            <div class="stat-icon">
-              <el-icon><Clock /></el-icon>
-            </div>
-            <div class="stat-info">
-              <p class="stat-value">{{ stats.pendingExams }}</p>
-              <p class="stat-label">待考考试</p>
-            </div>
-            <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+        <div class="stat-card student-stat cursor-pointer" @click="goToExamList">
+          <div class="stat-icon">
+            <el-icon><Clock /></el-icon>
           </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-card student-stat cursor-pointer" @click="goToHistory">
-            <div class="stat-icon">
-              <el-icon><CircleCheck /></el-icon>
-            </div>
-            <div class="stat-info">
-              <p class="stat-value">{{ stats.completedExams }}</p>
-              <p class="stat-label">已完成</p>
-            </div>
-            <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+          <div class="stat-info">
+            <p class="stat-value">{{ stats.pendingExams }}</p>
+            <p class="stat-label">待考考试</p>
           </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-card student-stat cursor-pointer" @click="goToWrongQuestions">
-            <div class="stat-icon">
-              <el-icon><CircleClose /></el-icon>
-            </div>
-            <div class="stat-info">
-              <p class="stat-value">{{ stats.wrongCount }}</p>
-              <p class="stat-label">错题数</p>
-            </div>
-            <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+          <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+        </div>
+        <div class="stat-card student-stat cursor-pointer" @click="goToHistory">
+          <div class="stat-icon">
+            <el-icon><CircleCheck /></el-icon>
           </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-card student-stat cursor-pointer" @click="goToStatistics">
-            <div class="stat-icon">
-              <el-icon><Plus /></el-icon>
-            </div>
-            <div class="stat-info">
-              <p class="stat-value">{{ stats.averageScore }}分</p>
-              <p class="stat-label">平均分</p>
-            </div>
-            <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+          <div class="stat-info">
+            <p class="stat-value">{{ stats.completedExams }}</p>
+            <p class="stat-label">已完成</p>
           </div>
-        </el-col>
+          <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+        </div>
+        <div class="stat-card student-stat cursor-pointer" @click="goToWrongQuestions">
+          <div class="stat-icon">
+            <el-icon><CircleClose /></el-icon>
+          </div>
+          <div class="stat-info">
+            <p class="stat-value">{{ stats.wrongCount }}</p>
+            <p class="stat-label">错题数</p>
+          </div>
+          <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+        </div>
+        <div class="stat-card student-stat cursor-pointer" @click="goToStatistics">
+          <div class="stat-icon">
+            <el-icon><Plus /></el-icon>
+          </div>
+          <div class="stat-info">
+            <p class="stat-value">{{ stats.averageScore }}分</p>
+            <p class="stat-label">平均分</p>
+          </div>
+          <div class="stat-arrow"><el-icon><ArrowRight /></el-icon></div>
+        </div>
       </template>
-    </el-row>
+    </div>
 
     <!-- 班级列表 - 仅对教师显示 -->
     <el-row :gutter="24" v-if="classes.length > 0 && userInfo.role === 'TEACHER'">
@@ -213,7 +189,7 @@
 
       <!-- 教师和学生：保持原有布局 -->
       <template v-else>
-        <el-col :span="16">
+        <el-col :span="24">
           <!-- 教师：最近考试 -->
           <div class="card" v-if="userInfo.role === 'TEACHER'">
             <div class="card-header">
@@ -241,75 +217,76 @@
               </el-table-column>
             </el-table>
           </div>
-
-          <!-- 学生：待考考试 -->
-          <div class="card" v-else-if="userInfo.role === 'STUDENT'">
-            <div class="card-header">
-              <div class="card-header-icon">
-                <el-icon><Clock /></el-icon>
-              </div>
-              <h3>待考考试</h3>
-              <el-button type="danger" link @click="$router.push('/student/exams')">
-                全部考试
-              </el-button>
-            </div>
-            <div v-if="pendingExams.length > 0">
-              <div class="exam-list">
-                <div class="exam-card" v-for="exam in pendingExams" :key="exam.id">
-                  <div class="exam-info">
-                    <h4>{{ exam.title }}</h4>
-                    <div class="exam-meta">
-                      <span class="meta-item"><el-icon><Clock /></el-icon>{{ exam.startTime }}</span>
-                      <span class="meta-item"><el-icon><Timer /></el-icon>{{ exam.duration }}分钟</span>
-                    </div>
-                    <p class="exam-desc">总分：{{ exam.totalScore }}分 | 及格线：{{ exam.passScore }}分</p>
-                  </div>
-                  <div class="exam-action">
-                    <el-button 
-                      v-if="exam.studentStatus === 'SUBMITTED'"
-                      type="success" 
-                      @click="handleJoinExam(exam.id)"
-                    >
-                      查看考试
-                    </el-button>
-                    <el-button 
-                      v-else
-                      type="danger" 
-                      :disabled="exam.status !== 'ONGOING'"
-                      @click="handleJoinExam(exam.id)"
-                    >
-                      {{ exam.status === 'ONGOING' ? '进入考试' : '等待开始' }}
-                    </el-button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div v-else class="empty-state">
-              <el-icon><Calendar /></el-icon>
-              <p>暂无待考考试</p>
-            </div>
-          </div>
-        </el-col>
-
-        <el-col :span="8">
-          <!-- 学生额外信息 -->
-          <div class="card" v-if="userInfo.role === 'STUDENT'" style="margin-top: 24px;">
-            <div class="card-header">
-              <div class="card-header-icon">
-                <el-icon><InfoIcon /></el-icon>
-              </div>
-              <h3>考试须知</h3>
-            </div>
-            <ul class="tips-list">
-              <li><span class="tip-icon">1.</span>进入考试后请保持网络畅通</li>
-              <li><span class="tip-icon">2.</span>考试过程中请勿频繁切换页面</li>
-              <li><span class="tip-icon">3.</span>答案会自动保存，但建议手动提交</li>
-              <li><span class="tip-icon">4.</span>考试结束后可查看错题分析</li>
-            </ul>
-          </div>
         </el-col>
       </template>
     </el-row>
+
+    <!-- 学生：待考考试和考试须知 -->
+    <div class="student-content-container" v-if="userInfo.role === 'STUDENT'">
+      <!-- 待考考试 -->
+      <div class="card exam-section">
+        <div class="card-header">
+          <div class="card-header-icon">
+            <el-icon><Clock /></el-icon>
+          </div>
+          <h3>待考考试</h3>
+          <el-button type="danger" link @click="$router.push('/student/exams')">
+            全部考试
+          </el-button>
+        </div>
+        <div v-if="pendingExams.length > 0">
+          <div class="exam-list">
+            <div class="exam-card" v-for="exam in pendingExams" :key="exam.id">
+              <div class="exam-info">
+                <h4>{{ exam.title }}</h4>
+                <div class="exam-meta">
+                  <span class="meta-item"><el-icon><Clock /></el-icon>{{ exam.startTime }}</span>
+                  <span class="meta-item"><el-icon><Timer /></el-icon>{{ exam.duration }}分钟</span>
+                </div>
+                <p class="exam-desc">总分：{{ exam.totalScore }}分 | 及格线：{{ exam.passScore }}分</p>
+              </div>
+              <div class="exam-action">
+                <el-button 
+                  v-if="exam.studentStatus === 'SUBMITTED'"
+                  type="success" 
+                  @click="handleJoinExam(exam.id)"
+                >
+                  查看考试
+                </el-button>
+                <el-button 
+                  v-else
+                  type="danger" 
+                  :disabled="exam.status !== 'ONGOING'"
+                  @click="handleJoinExam(exam.id)"
+                >
+                  {{ exam.status === 'ONGOING' ? '进入考试' : '等待开始' }}
+                </el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="empty-state">
+          <el-icon><Calendar /></el-icon>
+          <p>暂无待考考试</p>
+        </div>
+      </div>
+
+      <!-- 考试须知 -->
+      <div class="card tips-section">
+        <div class="card-header">
+          <div class="card-header-icon">
+            <el-icon><InfoIcon /></el-icon>
+          </div>
+          <h3>考试须知</h3>
+        </div>
+        <ul class="tips-list">
+          <li><span class="tip-icon">1.</span>进入考试后请保持网络畅通</li>
+          <li><span class="tip-icon">2.</span>考试过程中请勿频繁切换页面</li>
+          <li><span class="tip-icon">3.</span>答案会自动保存，但建议手动提交</li>
+          <li><span class="tip-icon">4.</span>考试结束后可查看错题分析</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -568,35 +545,58 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .dashboard {
-  max-width: 1400px;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 0 8px;
+  box-sizing: border-box;
 }
 
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: 0;
+  padding: 0 8px;
   
   h2 {
-    font-size: 28px;
+    font-size: clamp(20px, 5vw, 28px);
     font-weight: 700;
     color: #0f172a;
     margin: 0;
+    line-height: 1.3;
   }
   
   p {
-    margin-top: 8px;
-    font-size: 14px;
+    margin-top: 6px;
+    font-size: clamp(13px, 3vw, 14px);
     color: #64748b;
+    line-height: 1.5;
   }
+}
+
+/* 统计卡片容器 */
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 0 8px;
 }
 
 /* 统计卡片 */
 .stat-card {
   background: white;
   border-radius: 16px;
-  padding: 24px;
+  padding: 20px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  }
   
   .stat-icon {
     width: 56px;
@@ -606,34 +606,29 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     font-size: 24px;
+    flex-shrink: 0;
   }
   
   .stat-info {
     flex: 1;
+    min-width: 0;
   }
   
   .stat-value {
-    font-size: 28px;
+    font-size: clamp(20px, 4vw, 28px);
     font-weight: 700;
     margin: 0;
     color: #0f172a;
+    word-break: break-all;
+    line-height: 1.2;
   }
   
   .stat-label {
-    font-size: 13px;
+    font-size: clamp(12px, 2.5vw, 13px);
     color: #64748b;
     margin: 4px 0 0 0;
+    line-height: 1.4;
   }
-}
-
-.cursor-pointer {
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.cursor-pointer:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
 .admin-stat .stat-icon {
@@ -643,12 +638,6 @@ onMounted(() => {
 
 .teacher-stat {
   cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  }
   
   .stat-icon {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
@@ -659,6 +648,7 @@ onMounted(() => {
     color: #94a3b8;
     font-size: 18px;
     transition: all 0.2s;
+    flex-shrink: 0;
   }
   
   &:hover .stat-arrow {
@@ -669,12 +659,6 @@ onMounted(() => {
 
 .student-stat {
   cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  }
   
   .stat-icon {
     background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
@@ -685,6 +669,7 @@ onMounted(() => {
     color: #94a3b8;
     font-size: 18px;
     transition: all 0.2s;
+    flex-shrink: 0;
   }
   
   &:hover .stat-arrow {
@@ -696,8 +681,8 @@ onMounted(() => {
 /* 班级列表 */
 .class-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
   margin-top: 20px;
 }
 
@@ -711,34 +696,36 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.class-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
 }
 
 .class-info h4 {
-  font-size: 16px;
+  font-size: clamp(14px, 3vw, 16px);
   font-weight: 600;
   color: #1e293b;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  line-height: 1.3;
 }
 
 .class-department {
-  font-size: 14px;
+  font-size: clamp(12px, 2.5vw, 14px);
   color: #64748b;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .class-students {
-  font-size: 14px;
+  font-size: clamp(12px, 2.5vw, 14px);
   color: #94a3b8;
 }
 
 .class-actions {
   display: flex;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 /* 考试列表 */
@@ -756,33 +743,43 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.exam-info {
+  flex: 1;
+  min-width: 200px;
 }
 
 .exam-info h4 {
-  font-size: 16px;
+  font-size: clamp(14px, 3vw, 16px);
   font-weight: 600;
   color: #1e293b;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  line-height: 1.3;
 }
 
 .exam-meta {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   margin-bottom: 8px;
+  flex-wrap: wrap;
   
   .meta-item {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
+    font-size: clamp(12px, 2.5vw, 13px);
     color: #64748b;
   }
 }
 
 .exam-desc {
-  font-size: 13px;
+  font-size: clamp(12px, 2.5vw, 13px);
   color: #94a3b8;
   margin: 0;
+  line-height: 1.4;
 }
 
 .exam-action {
@@ -792,16 +789,17 @@ onMounted(() => {
 /* 空状态 */
 .empty-state {
   text-align: center;
-  padding: 40px;
+  padding: 40px 20px;
   color: #94a3b8;
   
   .el-icon {
-    font-size: 48px;
+    font-size: clamp(40px, 10vw, 48px);
     margin-bottom: 16px;
   }
   
   p {
     margin: 0;
+    font-size: clamp(13px, 3vw, 14px);
   }
 }
 
@@ -817,8 +815,9 @@ onMounted(() => {
     gap: 8px;
     padding: 12px 0;
     border-bottom: 1px solid #f1f5f9;
-    font-size: 14px;
+    font-size: clamp(13px, 2.8vw, 14px);
     color: #475569;
+    line-height: 1.5;
     
     &:last-child {
       border-bottom: none;
@@ -829,6 +828,227 @@ onMounted(() => {
     color: #dc2626;
     font-weight: 600;
     flex-shrink: 0;
+  }
+}
+
+/* 学生内容容器 */
+.student-content-container {
+  display: flex;
+  gap: 24px;
+  padding: 0 8px;
+  
+  .exam-section {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .tips-section {
+    width: 320px;
+    flex-shrink: 0;
+  }
+}
+
+/* 卡片样式 */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  
+  .card-header-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #fef3c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f59e0b;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  
+  h3 {
+    flex: 1;
+    font-size: clamp(14px, 3vw, 16px);
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1.3;
+  }
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 1200px) {
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  
+  .class-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .dashboard {
+    gap: 16px;
+    padding: 0 4px;
+  }
+  
+  .page-header {
+    padding: 0 4px;
+  }
+  
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 4px;
+  }
+  
+  .stat-card {
+    padding: 16px;
+    gap: 10px;
+    flex-direction: row;
+    align-items: center;
+    
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      font-size: 20px;
+    }
+    
+    .stat-value {
+      font-size: 20px;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+    }
+    
+    .stat-info {
+      text-align: left;
+    }
+  }
+  
+  .class-list {
+    grid-template-columns: 1fr;
+    padding: 0 4px;
+  }
+  
+  .class-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+  
+  .class-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .exam-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+  }
+  
+  .exam-action {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .exam-meta {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .student-content-container {
+    flex-direction: column;
+    gap: 16px;
+    padding: 0 4px;
+    
+    .tips-section {
+      width: 100%;
+    }
+  }
+  
+  .card {
+    padding: 16px;
+  }
+  
+  .card-header {
+    flex-wrap: wrap;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .stats-container {
+    gap: 10px;
+  }
+  
+  .stat-card {
+    padding: 14px;
+    gap: 10px;
+    
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+    }
+    
+    .stat-value {
+      font-size: 18px;
+    }
+  }
+  
+  .card {
+    padding: 14px;
+  }
+  
+  .tips-list li {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .stats-container {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .stat-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      font-size: 20px;
+    }
+    
+    .stat-value {
+      font-size: 20px;
+    }
+  }
+  
+  .class-card {
+    padding: 14px;
+  }
+  
+  .exam-card {
+    padding: 14px;
   }
 }
 </style>

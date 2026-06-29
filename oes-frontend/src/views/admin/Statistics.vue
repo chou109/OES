@@ -300,14 +300,15 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .statistics {
-  max-width: 1400px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .page-header {
   margin-bottom: 24px;
   
   h2 {
-    font-size: 28px;
+    font-size: clamp(22px, 4vw, 28px);
     font-weight: 700;
     color: #0f172a;
     margin: 0;
@@ -546,6 +547,293 @@ onMounted(() => {
         font-size: 12px;
         color: #64748b;
       }
+    }
+  }
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 1200px) {
+  .statistics {
+    padding: 0 8px;
+    box-sizing: border-box;
+  }
+  
+  .stat-card {
+    padding: 20px;
+    gap: 14px;
+    
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      font-size: 22px;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+    }
+  }
+  
+  .card {
+    padding: 20px;
+  }
+  
+  .chart-container {
+    gap: 24px;
+  }
+  
+  .pie-chart {
+    width: 140px;
+    height: 140px;
+    
+    .pie-center {
+      width: 88px;
+      height: 88px;
+    }
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .stat-card {
+    padding: 18px;
+    gap: 12px;
+    
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      font-size: 20px;
+    }
+    
+    .stat-value {
+      font-size: 22px;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+    }
+  }
+  
+  .card {
+    padding: 18px;
+  }
+  
+  .chart-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .pie-chart {
+    width: 120px;
+    height: 120px;
+    
+    .pie-center {
+      width: 76px;
+      height: 76px;
+    }
+  }
+  
+  .legend {
+    width: 100%;
+    
+    .legend-item {
+      padding: 10px 0;
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .statistics {
+    padding: 0 4px;
+  }
+  
+  .page-header h2 {
+    font-size: clamp(18px, 4vw, 24px);
+  }
+  
+  .stat-card {
+    padding: 16px;
+    gap: 10px;
+    
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+    }
+    
+    .stat-value {
+      font-size: 20px;
+    }
+    
+    .stat-label {
+      font-size: 11px;
+    }
+  }
+  
+  .card {
+    padding: 16px;
+  }
+  
+  .card-header h3 {
+    font-size: 15px;
+  }
+  
+  .pie-chart {
+    width: 100px;
+    height: 100px;
+    
+    .pie-center {
+      width: 64px;
+      height: 64px;
+      
+      span:first-child {
+        font-size: 16px;
+      }
+      
+      span:last-child {
+        font-size: 11px;
+      }
+    }
+  }
+  
+  .bar-item {
+    gap: 12px;
+    margin-bottom: 16px;
+    
+    .bar-label {
+      width: 50px;
+      font-size: 12px;
+    }
+    
+    .bar-track {
+      height: 20px;
+    }
+    
+    .bar-value {
+      width: 36px;
+      font-size: 13px;
+    }
+  }
+  
+  .line-chart {
+    height: 180px;
+    
+    .chart-bars .bar-wrapper .month-bar {
+      width: 18px;
+    }
+    
+    .chart-bars .bar-wrapper .month-label {
+      font-size: 10px;
+      margin-top: 6px;
+    }
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .stat-card {
+    padding: 14px;
+    gap: 8px;
+    
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+    }
+    
+    .stat-value {
+      font-size: 18px;
+    }
+  }
+  
+  .card {
+    padding: 14px;
+  }
+  
+  .pie-chart {
+    width: 88px;
+    height: 88px;
+    
+    .pie-center {
+      width: 56px;
+      height: 56px;
+      
+      span:first-child {
+        font-size: 14px;
+      }
+    }
+  }
+  
+  .legend .legend-item {
+    padding: 8px 0;
+    gap: 10px;
+    
+    .legend-color {
+      width: 14px;
+      height: 14px;
+    }
+  }
+  
+  .bar-item {
+    margin-bottom: 14px;
+    
+    .bar-track {
+      height: 18px;
+    }
+  }
+  
+  .line-chart {
+    height: 160px;
+    
+    .chart-bars .bar-wrapper .month-bar {
+      width: 14px;
+    }
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .stat-card {
+    padding: 12px;
+    flex-direction: row;
+    
+    .stat-info {
+      flex: 1;
+    }
+    
+    .stat-value {
+      font-size: 16px;
+    }
+    
+    .stat-label {
+      font-size: 10px;
+    }
+  }
+  
+  .pie-chart {
+    width: 76px;
+    height: 76px;
+    
+    .pie-center {
+      width: 48px;
+      height: 48px;
+      
+      span:first-child {
+        font-size: 12px;
+      }
+      
+      span:last-child {
+        font-size: 10px;
+      }
+    }
+  }
+  
+  .line-chart {
+    height: 140px;
+    
+    .chart-bars .bar-wrapper .month-bar {
+      width: 10px;
+    }
+    
+    .chart-bars .bar-wrapper .month-label {
+      font-size: 9px;
     }
   }
 }

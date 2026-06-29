@@ -6,140 +6,96 @@
     </div>
 
     <!-- 统计卡片 -->
-    <el-row :gutter="20" style="margin-bottom: 24px;">
-      <el-col :span="6">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <el-icon><SuccessFilled /></el-icon>
-          </div>
-          <div class="stat-info">
-            <p class="stat-value">{{ stats.totalExams }}</p>
-            <p class="stat-label">总考试数</p>
-          </div>
+    <div class="stat-grid">
+      <div class="stat-card" v-for="(item, index) in statItems" :key="index">
+        <div class="stat-icon" :style="{ background: item.bgColor }">
+          <el-icon><component :is="item.icon" /></el-icon>
         </div>
-      </el-col>
-      <el-col :span="6">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <el-icon><Medal /></el-icon>
-          </div>
-          <div class="stat-info">
-            <p class="stat-value">{{ stats.averageScore }}</p>
-            <p class="stat-label">平均分</p>
-          </div>
+        <div class="stat-info">
+          <p class="stat-value">{{ item.value }}</p>
+          <p class="stat-label">{{ item.label }}</p>
         </div>
-      </el-col>
-      <el-col :span="6">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <el-icon><TrendCharts /></el-icon>
-          </div>
-          <div class="stat-info">
-            <p class="stat-value">{{ stats.highestScore }}</p>
-            <p class="stat-label">最高分</p>
-          </div>
-        </div>
-      </el-col>
-      <el-col :span="6">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <el-icon><Warning /></el-icon>
-          </div>
-          <div class="stat-info">
-            <p class="stat-value">{{ stats.wrongCount }}</p>
-            <p class="stat-label">错题数</p>
-          </div>
-        </div>
-      </el-col>
-    </el-row>
+      </div>
+    </div>
 
-    <el-row :gutter="24" style="margin-top: 24px;">
-      <el-col :span="12">
-        <div class="card">
-          <div class="card-header">
-            <h3>科目成绩</h3>
-          </div>
-          <div class="subject-list">
-            <div class="subject-item" v-for="subject in subjectScores" :key="subject.subjectName">
-              <div class="subject-info">
-                <h4>{{ subject.subjectName }}</h4>
-                <p>{{ subject.examCount }}次考试</p>
-              </div>
-              <div class="subject-score">
-                <span class="score-value">{{ subject.avgScore }}</span>
-                <span class="score-label">分</span>
-              </div>
-              <div class="score-bar">
-                <div class="bar-fill" :style="{ width: subject.avgScore + '%', background: subject.color }"></div>
-              </div>
+    <div class="content-grid">
+      <!-- 科目成绩 -->
+      <div class="card">
+        <div class="card-header">
+          <h3>科目成绩</h3>
+        </div>
+        <div class="subject-list">
+          <div class="subject-item" v-for="subject in subjectScores" :key="subject.subjectName">
+            <div class="subject-info">
+              <h4>{{ subject.subjectName }}</h4>
+              <p>{{ subject.examCount }}次考试</p>
+            </div>
+            <div class="subject-score">
+              <span class="score-value">{{ subject.avgScore }}</span>
+              <span class="score-label">分</span>
+            </div>
+            <div class="score-bar">
+              <div class="bar-fill" :style="{ width: subject.avgScore + '%', background: subject.color }"></div>
             </div>
           </div>
         </div>
-      </el-col>
-      <el-col :span="12">
-        <div class="card">
-          <div class="card-header">
-            <h3>答题情况</h3>
+      </div>
+
+      <!-- 答题情况 -->
+      <div class="card">
+        <div class="card-header">
+          <h3>答题情况</h3>
+        </div>
+        <div class="answer-stats">
+          <div class="answer-item">
+            <div class="answer-icon correct">
+              <el-icon><SuccessFilled /></el-icon>
+            </div>
+            <div class="answer-info">
+              <span class="answer-count">{{ stats.correctCount }}</span>
+              <span class="answer-label">答对题数</span>
+            </div>
+            <span class="answer-rate">{{ correctRate }}%</span>
           </div>
-          <div class="answer-stats">
-            <div class="answer-item">
-              <div class="answer-icon correct">
-                <el-icon><SuccessFilled /></el-icon>
-              </div>
-              <div class="answer-info">
-                <span class="answer-count">{{ stats.correctCount }}</span>
-                <span class="answer-label">答对题数</span>
-              </div>
-              <span class="answer-rate">{{ correctRate }}%</span>
+          <div class="answer-item">
+            <div class="answer-icon wrong">
+              <el-icon><CircleCloseFilled /></el-icon>
             </div>
-            <div class="answer-item">
-              <div class="answer-icon wrong">
-                <el-icon><CircleCloseFilled /></el-icon>
-              </div>
-              <div class="answer-info">
-                <span class="answer-count">{{ stats.wrongCount }}</span>
-                <span class="answer-label">答错题数</span>
-              </div>
-              <span class="answer-rate">{{ wrongRate }}%</span>
+            <div class="answer-info">
+              <span class="answer-count">{{ stats.wrongCount }}</span>
+              <span class="answer-label">答错题数</span>
             </div>
-            <div class="answer-item">
-              <div class="answer-icon skip">
-                <el-icon><RemoveFilled /></el-icon>
-              </div>
-              <div class="answer-info">
-                <span class="answer-count">{{ stats.skippedCount }}</span>
-                <span class="answer-label">未答题数</span>
-              </div>
-              <span class="answer-rate">{{ skippedRate }}%</span>
+            <span class="answer-rate">{{ wrongRate }}%</span>
+          </div>
+          <div class="answer-item">
+            <div class="answer-icon skip">
+              <el-icon><RemoveFilled /></el-icon>
             </div>
+            <div class="answer-info">
+              <span class="answer-count">{{ stats.skippedCount }}</span>
+              <span class="answer-label">未答题数</span>
+            </div>
+            <span class="answer-rate">{{ skippedRate }}%</span>
           </div>
         </div>
-      </el-col>
-    </el-row>
+      </div>
+    </div>
 
     <!-- 成绩趋势图 -->
-    <el-row :gutter="24" style="margin-top: 24px;">
-      <el-col :span="24">
-        <div class="card">
-          <div class="card-header">
-            <h3>成绩趋势</h3>
-          </div>
-          <div ref="scoreTrendChart" style="width: 100%; height: 400px;"></div>
-        </div>
-      </el-col>
-    </el-row>
+    <div class="card full-width">
+      <div class="card-header">
+        <h3>成绩趋势</h3>
+      </div>
+      <div ref="scoreTrendChart" class="chart-container"></div>
+    </div>
 
     <!-- 知识点掌握雷达图 -->
-    <el-row :gutter="24" style="margin-top: 24px;">
-      <el-col :span="24">
-        <div class="card">
-          <div class="card-header">
-            <h3>知识点掌握情况</h3>
-          </div>
-          <div ref="knowledgeRadarChart" style="width: 100%; height: 400px;"></div>
-        </div>
-      </el-col>
-    </el-row>
+    <div class="card full-width">
+      <div class="card-header">
+        <h3>知识点掌握情况</h3>
+      </div>
+      <div ref="knowledgeRadarChart" class="chart-container"></div>
+    </div>
   </div>
 </template>
 
@@ -147,6 +103,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { examRecordApi } from '../../utils/api'
 import * as echarts from 'echarts'
+import { SuccessFilled, Medal, TrendCharts, Warning, CircleCloseFilled, RemoveFilled } from '@element-plus/icons-vue'
 
 const stats = ref({
   totalExams: 0,
@@ -156,6 +113,13 @@ const stats = ref({
   correctCount: 0,
   skippedCount: 0
 })
+
+const statItems = computed(() => [
+  { icon: SuccessFilled, value: stats.value.totalExams, label: '总考试数', bgColor: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)' },
+  { icon: Medal, value: stats.value.averageScore, label: '平均分', bgColor: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' },
+  { icon: TrendCharts, value: stats.value.highestScore, label: '最高分', bgColor: 'linear-gradient(135deg, #22c55e 0%, #15803d 100%)' },
+  { icon: Warning, value: stats.value.wrongCount, label: '错题数', bgColor: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' }
+])
 
 const subjectColors = ['#7f1d1d', '#991b1b', '#b91c1c', '#dc2626', '#ef4444', '#f87171', '#fb923c', '#f59e0b']
 
@@ -468,103 +432,157 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .student-statistics {
-  max-width: 1400px;
+  width: 100%;
+  max-width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
 }
 
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  padding: 0 8px;
   
   h2 {
-    font-size: 28px;
+    font-size: clamp(20px, 5vw, 28px);
     font-weight: 700;
     color: #0f172a;
     margin: 0;
+    line-height: 1.3;
   }
   
   p {
-    margin-top: 8px;
-    font-size: 14px;
+    margin-top: 6px;
+    font-size: clamp(13px, 3vw, 14px);
     color: #64748b;
+    line-height: 1.5;
   }
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 0 8px;
 }
 
 .stat-card {
   background: white;
   border-radius: 16px;
-  padding: 24px;
+  padding: 20px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  }
   
   .stat-icon {
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
     border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    font-size: 22px;
     color: white;
+    flex-shrink: 0;
   }
   
   .stat-info {
     flex: 1;
+    min-width: 0;
   }
   
   .stat-value {
-    font-size: 28px;
+    font-size: clamp(20px, 4vw, 28px);
     font-weight: 700;
     margin: 0;
     color: #0f172a;
+    word-break: break-all;
+    line-height: 1.2;
   }
   
   .stat-label {
-    font-size: 13px;
+    font-size: clamp(11px, 2.5vw, 13px);
     color: #64748b;
     margin: 4px 0 0 0;
+    line-height: 1.4;
   }
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 0 8px;
 }
 
 .card {
   background: white;
   border-radius: 16px;
-  padding: 24px;
+  padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  
+  &.full-width {
+    margin-bottom: 20px;
+    margin-left: 8px;
+    margin-right: 8px;
+    width: calc(100% - 16px);
+  }
 }
 
 .card-header {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   
   h3 {
-    font-size: 18px;
+    font-size: clamp(14px, 3vw, 16px);
     font-weight: 600;
     color: #1e293b;
     margin: 0;
+    line-height: 1.3;
   }
+}
+
+.chart-container {
+  width: 100%;
+  height: 300px;
 }
 
 .subject-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   
   .subject-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
     .subject-info {
       margin-bottom: 8px;
       
       h4 {
-        font-size: 14px;
+        font-size: clamp(13px, 2.8vw, 14px);
         font-weight: 600;
         color: #1e293b;
         margin: 0;
+        line-height: 1.4;
       }
       
       p {
-        font-size: 12px;
+        font-size: clamp(11px, 2.4vw, 12px);
         color: #64748b;
-        margin: 4px 0 0 0;
+        margin: 3px 0 0 0;
+        line-height: 1.4;
       }
     }
     
@@ -575,26 +593,26 @@ onUnmounted(() => {
       margin-bottom: 8px;
       
       .score-value {
-        font-size: 24px;
+        font-size: clamp(18px, 4vw, 22px);
         font-weight: 700;
         color: #0f172a;
       }
       
       .score-label {
-        font-size: 12px;
+        font-size: clamp(11px, 2.4vw, 12px);
         color: #64748b;
       }
     }
     
     .score-bar {
-      height: 8px;
+      height: 6px;
       background: #f1f5f9;
-      border-radius: 4px;
+      border-radius: 3px;
       overflow: hidden;
       
       .bar-fill {
         height: 100%;
-        border-radius: 4px;
+        border-radius: 3px;
         transition: width 0.5s ease;
       }
     }
@@ -605,8 +623,8 @@ onUnmounted(() => {
   .answer-item {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 16px 0;
+    gap: 14px;
+    padding: 14px 0;
     border-bottom: 1px solid #f1f5f9;
     
     &:last-child {
@@ -614,50 +632,234 @@ onUnmounted(() => {
     }
     
     .answer-icon {
-      width: 48px;
-      height: 48px;
+      width: 44px;
+      height: 44px;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 18px;
+      flex-shrink: 0;
       
       &.correct {
-        background: #fee2e2;
-        color: #b91c1c;
+        background: #dcfce7;
+        color: #16a34a;
       }
       
       &.wrong {
-        background: #fecaca;
+        background: #fee2e2;
         color: #dc2626;
       }
       
       &.skip {
-        background: #fca5a5;
-        color: #ef4444;
+        background: #f3f4f6;
+        color: #6b7280;
       }
     }
     
     .answer-info {
       flex: 1;
+      min-width: 0;
       
       .answer-count {
         display: block;
-        font-size: 20px;
+        font-size: clamp(16px, 3.5vw, 18px);
         font-weight: 700;
         color: #0f172a;
+        line-height: 1.2;
       }
       
       .answer-label {
-        font-size: 13px;
+        font-size: clamp(11px, 2.4vw, 12px);
         color: #64748b;
+        line-height: 1.4;
       }
     }
     
     .answer-rate {
-      font-size: 18px;
+      font-size: clamp(14px, 3vw, 16px);
       font-weight: 600;
       color: #dc2626;
+      flex-shrink: 0;
+      min-width: 40px;
+      text-align: right;
+    }
+  }
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 1200px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  
+  .stat-card {
+    padding: 18px;
+    gap: 12px;
+    
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .student-statistics {
+    padding: 0 4px;
+  }
+  
+  .page-header {
+    padding: 0 4px;
+    margin-bottom: 16px;
+  }
+  
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 0 4px;
+  }
+  
+  .stat-card {
+    padding: 14px;
+    gap: 10px;
+    
+    .stat-icon {
+      width: 38px;
+      height: 38px;
+      font-size: 16px;
+      border-radius: 10px;
+    }
+    
+    .stat-value {
+      font-size: 18px;
+    }
+    
+    .stat-label {
+      font-size: 11px;
+    }
+  }
+  
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 0 4px;
+  }
+  
+  .card {
+    padding: 14px;
+  }
+  
+  .card.full-width {
+    margin-left: 4px;
+    margin-right: 4px;
+    width: calc(100% - 8px);
+  }
+  
+  .chart-container {
+    height: 220px;
+  }
+  
+  .subject-list {
+    gap: 12px;
+    
+    .subject-item {
+      padding: 10px 0;
+    }
+  }
+  
+  .answer-stats .answer-item {
+    gap: 10px;
+    padding: 12px 0;
+    
+    .answer-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 14px;
+    }
+    
+    .answer-count {
+      font-size: 14px;
+    }
+    
+    .answer-rate {
+      font-size: 13px;
+    }
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .stat-card {
+    padding: 12px;
+    gap: 8px;
+    
+    .stat-icon {
+      width: 34px;
+      height: 34px;
+      font-size: 14px;
+    }
+    
+    .stat-value {
+      font-size: 16px;
+    }
+  }
+  
+  .card {
+    padding: 12px;
+  }
+  
+  .chart-container {
+    height: 200px;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .stat-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .stat-card {
+    flex-direction: row;
+    align-items: center;
+    
+    .stat-info {
+      text-align: left;
+    }
+    
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+    
+    .stat-value {
+      font-size: 18px;
+    }
+  }
+  
+  .chart-container {
+    height: 180px;
+  }
+  
+  .answer-stats .answer-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    
+    .answer-info {
+      width: 100%;
+    }
+    
+    .answer-rate {
+      align-self: flex-end;
     }
   }
 }

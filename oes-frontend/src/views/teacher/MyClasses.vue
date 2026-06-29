@@ -74,6 +74,33 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.my-classes {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.page-header {
+  padding: 0 8px;
+  margin-bottom: 20px;
+  
+  h2 {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.3;
+  }
+  
+  p {
+    margin-top: 6px;
+    font-size: clamp(13px, 3vw, 14px);
+    color: #64748b;
+    line-height: 1.5;
+  }
+}
+
 .class-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -83,11 +110,20 @@ onMounted(() => {
 .class-card {
   cursor: pointer;
   transition: all 0.3s;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  
+  :deep(.el-card__body) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 }
 
 .class-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .class-info {
@@ -108,5 +144,69 @@ onMounted(() => {
 .class-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 768px) {
+  .my-classes {
+    padding: 0 4px;
+  }
+  
+  .page-header {
+    padding: 0 4px;
+  }
+  
+  .class-list {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  
+  .class-card :deep(.el-card__body) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .class-info h3 {
+    font-size: 16px;
+  }
+  
+  .class-code,
+  .class-role {
+    font-size: 13px;
+  }
+  
+  .class-actions {
+    width: 100%;
+  }
+  
+  .class-actions .el-button {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .class-card :deep(.el-card__body) {
+    padding: 14px;
+  }
+  
+  .class-info h3 {
+    font-size: 15px;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .class-card :deep(.el-card__body) {
+    padding: 12px;
+  }
+  
+  .class-info h3 {
+    font-size: 14px;
+  }
+  
+  .class-code,
+  .class-role {
+    font-size: 12px;
+  }
 }
 </style>

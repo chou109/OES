@@ -282,7 +282,8 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .account-container {
-  max-width: 900px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -290,7 +291,7 @@ onMounted(async () => {
   margin-bottom: 20px;
   
   h2 {
-    font-size: 20px;
+    font-size: clamp(18px, 3vw, 20px);
     font-weight: 600;
     color: #2c3e50;
     margin: 0;
@@ -309,14 +310,21 @@ onMounted(async () => {
     background: linear-gradient(135deg, #dc2626, #991b1b);
     margin: 0;
     border-radius: 12px 12px 0 0;
+    flex-wrap: wrap;
   }
   
   :deep(.el-tabs__nav-wrap) {
     border-radius: 12px 12px 0 0;
+    overflow: visible;
     
     &::after {
       display: none;
     }
+  }
+  
+  :deep(.el-tabs__nav) {
+    flex-wrap: wrap;
+    justify-content: center;
   }
   
   :deep(.el-tabs__item) {
@@ -328,6 +336,7 @@ onMounted(async () => {
     padding: 0 30px;
     border: none;
     background: transparent;
+    white-space: nowrap;
     
     &:hover {
       color: #fff !important;
@@ -343,6 +352,11 @@ onMounted(async () => {
   :deep(.el-tabs__content) {
     padding: 30px;
     background: #fff;
+  }
+  
+  :deep(.el-tabs__next),
+  :deep(.el-tabs__prev) {
+    display: none !important;
   }
 }
 
@@ -399,6 +413,7 @@ onMounted(async () => {
 
 .account-form {
   max-width: 600px;
+  width: 100%;
   
   :deep(.el-form-item__label) {
     font-weight: 500;
@@ -428,6 +443,7 @@ onMounted(async () => {
     border-radius: 8px;
     padding: 10px 25px;
     color: #fff !important;
+    width: 140px;
     
     &:hover {
       background: linear-gradient(135deg, #b91c1c, #7f1d1d);
@@ -445,6 +461,7 @@ onMounted(async () => {
     border-color: #dc2626;
     background: #dc2626;
     color: #fff !important;
+    width: 140px;
 
     &:hover {
       background: rgba(220, 38, 38, 0.15);
@@ -511,5 +528,260 @@ onMounted(async () => {
 
 :deep(.el-row) {
   margin-bottom: 5px;
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 992px) {
+  .account-container {
+    padding: 0 8px;
+    box-sizing: border-box;
+  }
+  
+  .account-card {
+    border-radius: 12px;
+  }
+  
+  .account-tabs :deep(.el-tabs__content) {
+    padding: 24px;
+  }
+  
+  .account-form {
+    max-width: 100% !important;
+  }
+  
+  .account-form :deep(.el-col) {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none;
+    margin-bottom: 12px;
+  }
+  
+  .account-form :deep(.el-row) {
+    display: block;
+  }
+  
+  .account-form :deep(.el-form-item) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  
+  .account-form :deep(.el-form-item__label) {
+    width: auto !important;
+    padding-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .account-form :deep(.el-form-item__content) {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+  
+  .account-form :deep(.el-input) {
+    width: 100%;
+  }
+  
+  .account-form :deep(.el-input__inner) {
+    width: 100%;
+  }
+  
+  .account-form :deep(.el-radio-group) {
+    display: flex;
+    gap: 20px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .account-container {
+    padding: 0 4px;
+  }
+  
+  .account-header {
+    margin-bottom: 16px;
+    padding: 0 4px;
+    
+    h2 {
+      font-size: clamp(18px, 4vw, 24px);
+    }
+  }
+  
+  .account-card {
+    border-radius: 10px;
+  }
+  
+  .account-tabs :deep(.el-tabs__header) {
+    padding: 0 8px;
+  }
+  
+  .account-tabs :deep(.el-tabs__item) {
+    padding: 0 clamp(10px, 4vw, 20px);
+    font-size: clamp(12px, 3vw, 14px);
+    height: 45px;
+    line-height: 45px;
+    flex: 1;
+    text-align: center;
+  }
+  
+  .account-tabs :deep(.el-tabs__content) {
+    padding: 16px;
+  }
+  
+  .tab-content {
+    min-height: 260px;
+  }
+  
+  .account-form {
+    max-width: 100%;
+  }
+  
+  .account-form :deep(.el-form-item) {
+    margin-bottom: 16px;
+  }
+  
+  .account-form :deep(.el-form-item__label) {
+    font-size: 13px;
+    padding-bottom: 6px;
+  }
+  
+  .account-form :deep(.el-form-item__content) {
+    width: 100%;
+  }
+  
+  .account-form :deep(.el-input) {
+    width: 100%;
+  }
+  
+  .account-form :deep(.el-radio-group) {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .avatar-tab {
+    padding: 20px 0;
+  }
+  
+  .avatar-preview {
+    margin-bottom: 20px;
+    
+    .big-avatar-img {
+      width: 120px;
+      height: 120px;
+    }
+  }
+  
+  .big-avatar {
+    width: 120px !important;
+    height: 120px !important;
+    font-size: 36px !important;
+  }
+  
+  .verification-input {
+    flex-direction: column;
+    gap: 12px;
+    
+    :deep(.el-input) {
+      width: 100%;
+    }
+    
+    :deep(.el-button) {
+      width: 100%;
+    }
+  }
+  
+  .password-section h4,
+  .forgot-password-section h4 {
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .account-tabs :deep(.el-tabs__content) {
+    padding: 14px;
+  }
+  
+  .avatar-preview {
+    margin-bottom: 16px;
+    
+    .big-avatar-img {
+      width: 100px;
+      height: 100px;
+    }
+  }
+  
+  .big-avatar {
+    width: 100px !important;
+    height: 100px !important;
+    font-size: 32px !important;
+  }
+  
+  .account-form :deep(.el-form-item) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .account-form :deep(.el-form-item__content) {
+    margin-left: 0 !important;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .account-form :deep(.el-button--danger),
+  .account-form :deep(.el-button) {
+    width: 140px !important;
+    margin-bottom: 0;
+    margin-left: 0 !important;
+  }
+  
+  .account-form :deep(.el-button + .el-button) {
+    margin-left: 0 !important;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .account-tabs :deep(.el-tabs__header) {
+    padding: 0 4px;
+  }
+  
+  .account-tabs :deep(.el-tabs__item) {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+  
+  .account-tabs :deep(.el-tabs__content) {
+    padding: 12px;
+  }
+  
+  .avatar-preview {
+    margin-bottom: 14px;
+    
+    .big-avatar-img {
+      width: 80px;
+      height: 80px;
+    }
+  }
+  
+  .big-avatar {
+    width: 80px !important;
+    height: 80px !important;
+    font-size: 28px !important;
+  }
+  
+  .account-form :deep(.el-form-item__label) {
+    width: 70px !important;
+    font-size: 12px;
+  }
+  
+  .account-form :deep(.el-col) {
+    margin-bottom: 8px;
+  }
 }
 </style>

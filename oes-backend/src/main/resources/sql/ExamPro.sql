@@ -147,6 +147,7 @@ CREATE TABLE IF NOT EXISTS `exam_paper` (
   `creator_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
   `question_ids` text COMMENT '题目IDs JSON',
   `question_order` text COMMENT '题目顺序JSON (打乱后)',
+  `question_scores` text COMMENT '题目分值JSON',
   `config` text COMMENT '试卷配置JSON',
   `status` varchar(20) DEFAULT 'DRAFT' COMMENT '状态: DRAFT/PUBLISHED',
   `deleted` tinyint(4) DEFAULT '0' COMMENT '删除标记',

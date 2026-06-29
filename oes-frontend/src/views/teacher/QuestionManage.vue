@@ -7,21 +7,27 @@
 
     <div class="card">
       <div class="toolbar">
-        <el-select v-model="params.subjectId" placeholder="选择科目" style="width: 180px" clearable @change="loadData">
-          <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
-        </el-select>
-        <el-select v-model="params.type" placeholder="题目类型" style="width: 160px" clearable @change="loadData">
-          <el-option label="单选题" value="SINGLE_CHOICE" />
-          <el-option label="多选题" value="MULTIPLE_CHOICE" />
-          <el-option label="判断题" value="JUDGMENT" />
-          <el-option label="填空题" value="FILL_BLANK" />
-          <el-option label="简答题" value="ESSAY" />
-          <el-option label="编程题" value="PROGRAMMING" />
-        </el-select>
-        <el-input v-model="params.keyword" placeholder="搜索题目内容" style="width: 200px" clearable @change="loadData" />
-        <el-button type="danger" @click="loadData">搜索</el-button>
-        <el-button type="danger" @click="handleCreate">新增题目</el-button>
-        <el-button type="primary" @click="showImportDialog = true">批量导入</el-button>
+        <div class="filter-row">
+          <el-select v-model="params.subjectId" placeholder="选择科目" style="width: 180px" clearable @change="loadData">
+            <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
+          </el-select>
+          <el-select v-model="params.type" placeholder="题目类型" style="width: 160px" clearable @change="loadData">
+            <el-option label="单选题" value="SINGLE_CHOICE" />
+            <el-option label="多选题" value="MULTIPLE_CHOICE" />
+            <el-option label="判断题" value="JUDGMENT" />
+            <el-option label="填空题" value="FILL_BLANK" />
+            <el-option label="简答题" value="ESSAY" />
+            <el-option label="编程题" value="PROGRAMMING" />
+          </el-select>
+        </div>
+        <div class="search-row">
+          <el-input v-model="params.keyword" placeholder="搜索题目内容" style="width: 200px" clearable @change="loadData" />
+          <el-button type="danger" @click="loadData">搜索</el-button>
+        </div>
+        <div class="action-row">
+          <el-button type="danger" @click="handleCreate">新增题目</el-button>
+          <el-button type="primary" @click="showImportDialog = true">批量导入</el-button>
+        </div>
       </div>
 
       <el-table :data="tableData" v-loading="loading" stripe>
@@ -479,36 +485,70 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .question-manage {
-  max-width: 1400px;
+  width: 100%;
+  max-width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
 }
 
 .page-header {
-  margin-bottom: 24px;
+  padding: 0 8px;
+  margin-bottom: 20px;
   
   h2 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #1a1a2e;
-    margin-bottom: 8px;
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.3;
   }
   
   p {
-    font-size: 14px;
-    color: #666;
+    margin-top: 6px;
+    font-size: clamp(13px, 3vw, 14px);
+    color: #64748b;
+    line-height: 1.5;
   }
 }
 
 .card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .toolbar {
+  margin-bottom: 20px;
+}
+
+.filter-row {
   display: flex;
   gap: 12px;
-  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.search-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 24px;
+  z-index: 100;
+  padding: 16px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin: -20px -20px 20px;
+}
+
+.action-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
   flex-wrap: wrap;
 }
 
@@ -517,9 +557,10 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
   
   .hint {
-    font-size: 12px;
+    font-size: clamp(11px, 2.5vw, 12px);
     color: #999;
   }
 }
@@ -637,7 +678,7 @@ onMounted(() => {
     flex: 1;
     
     .result-message {
-      font-size: 16px;
+      font-size: clamp(14px, 3vw, 16px);
       font-weight: 600;
       color: #1a1a2e;
       margin: 0 0 12px 0;
@@ -646,9 +687,10 @@ onMounted(() => {
     .result-stats {
       display: flex;
       gap: 24px;
+      flex-wrap: wrap;
       
       .stat-item {
-        font-size: 14px;
+        font-size: clamp(13px, 2.8vw, 14px);
         color: #666;
         
         strong {
@@ -664,7 +706,7 @@ onMounted(() => {
   padding: 0 20px 20px;
   
   .errors-title {
-    font-size: 14px;
+    font-size: clamp(13px, 2.8vw, 14px);
     font-weight: 600;
     color: #dc2626;
     margin: 0 0 12px 0;
@@ -675,7 +717,7 @@ onMounted(() => {
     padding-left: 20px;
     
     li {
-      font-size: 13px;
+      font-size: clamp(12px, 2.5vw, 13px);
       color: #666;
       margin-bottom: 8px;
       word-break: break-all;
@@ -695,13 +737,151 @@ onMounted(() => {
     gap: 8px;
     
     label {
-      font-size: 14px;
+      font-size: clamp(13px, 2.8vw, 14px);
       color: #333;
       font-weight: 500;
     }
     
     :deep(.el-input__wrapper) {
       width: 120px;
+    }
+  }
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 992px) {
+  .card {
+    padding: 16px;
+    overflow-x: auto;
+  }
+  
+  .filter-row,
+  .action-row {
+    gap: 10px;
+  }
+  
+  .search-row {
+    margin: -16px -16px 16px;
+    padding: 14px;
+  }
+  
+  .question-count-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .question-manage {
+    padding: 0 4px;
+  }
+  
+  .page-header {
+    padding: 0 4px;
+  }
+  
+  .card {
+    padding: 14px;
+  }
+  
+  .filter-row {
+    flex-wrap: nowrap;
+    margin-bottom: 10px;
+
+    .el-select {
+      flex: 1;
+      min-width: 0;
+      width: auto !important;
+    }
+  }
+  
+  .search-row {
+    margin: -14px -14px 14px;
+    padding: 12px;
+    flex-wrap: nowrap;
+
+    .el-input {
+      flex: 1;
+      min-width: 0;
+      width: auto !important;
+    }
+
+    .el-button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+  }
+  
+  .action-row {
+    flex-wrap: nowrap;
+  }
+  
+  .blank-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .question-count-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .result-summary {
+    flex-direction: column;
+    text-align: center;
+    
+    .result-icon {
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+    }
+    
+    .result-info {
+      .result-stats {
+        justify-content: center;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .card {
+    padding: 12px;
+  }
+  
+  .search-row {
+    margin: -12px -12px 12px;
+    padding: 10px;
+  }
+  
+  .result-summary {
+    padding: 16px;
+    
+    .result-icon {
+      width: 44px;
+      height: 44px;
+      font-size: 20px;
+    }
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .card {
+    padding: 10px;
+  }
+  
+  .search-row {
+    margin: -10px -10px 10px;
+    padding: 8px;
+  }
+  
+  .result-summary {
+    padding: 12px;
+    
+    .result-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
     }
   }
 }

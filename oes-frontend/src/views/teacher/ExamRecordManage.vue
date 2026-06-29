@@ -272,67 +272,83 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.exam-record-manage { max-width: 1400px; }
-.toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
+.exam-record-manage {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
 
 .page-header {
-  margin-bottom: 24px;
+  padding: 0 8px;
+  margin-bottom: 20px;
   
   h2 {
-    font-size: 28px;
+    font-size: clamp(20px, 5vw, 28px);
     font-weight: 700;
     color: #0f172a;
     margin: 0;
+    line-height: 1.3;
   }
   
   p {
-    margin-top: 8px;
-    font-size: 14px;
+    margin-top: 6px;
+    font-size: clamp(13px, 3vw, 14px);
     color: #64748b;
+    line-height: 1.5;
   }
 }
 
 .card {
   background: white;
   border-radius: 16px;
-  padding: 24px;
+  padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .stats-section {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
   border-bottom: 1px solid #e2e8f0;
   
   h3 {
-    font-size: 18px;
+    font-size: clamp(14px, 3vw, 16px);
     font-weight: 600;
     color: #1e293b;
-    margin: 0 0 20px 0;
+    margin: 0 0 16px 0;
   }
   
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 16px;
+    gap: 14px;
   }
   
   .stat-item {
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     border-radius: 12px;
-    padding: 20px;
+    padding: 16px;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     
     .stat-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 18px;
+      flex-shrink: 0;
       
       &.highest {
         background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
@@ -366,53 +382,186 @@ onMounted(() => {
     }
     
     .stat-info {
+      flex: 1;
+      min-width: 0;
+      
       .stat-label {
         display: block;
-        font-size: 12px;
+        font-size: clamp(11px, 2.5vw, 12px);
         color: #64748b;
         margin-bottom: 4px;
       }
       
       .stat-value {
-        font-size: 24px;
+        font-size: clamp(18px, 4vw, 24px);
         font-weight: 700;
         color: #1e293b;
+        line-height: 1.2;
       }
     }
   }
 }
 
 .analysis-section {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
   border-bottom: 1px solid #e2e8f0;
   
   h3 {
-    font-size: 18px;
+    font-size: clamp(14px, 3vw, 16px);
     font-weight: 600;
     color: #1e293b;
-    margin: 0 0 20px 0;
+    margin: 0 0 16px 0;
   }
   
   .rate-wrapper {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     
     .rate-text {
       font-weight: 600;
       color: #1e293b;
-      min-width: 40px;
+      min-width: 36px;
+      font-size: clamp(12px, 2.5vw, 13px);
     }
   }
 }
 
 .records-section {
   h3 {
-    font-size: 18px;
+    font-size: clamp(14px, 3vw, 16px);
     font-weight: 600;
     color: #1e293b;
-    margin: 0 0 20px 0;
+    margin: 0 0 16px 0;
+  }
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 1200px) {
+  .stats-section .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  
+  .stat-item {
+    padding: 14px;
+    gap: 10px;
+    
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .card {
+    padding: 16px;
+    overflow-x: auto;
+  }
+  
+  .toolbar {
+    gap: 10px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .exam-record-manage {
+    padding: 0 4px;
+  }
+  
+  .page-header {
+    padding: 0 4px;
+  }
+  
+  .card {
+    padding: 14px;
+  }
+  
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .toolbar .el-select,
+  .toolbar .el-input,
+  .toolbar .el-button {
+    width: 100%;
+  }
+  
+  .stats-section {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+  }
+  
+  .stats-section .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .stat-item {
+    padding: 12px;
+    gap: 8px;
+    
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 14px;
+    }
+    
+    .stat-info .stat-value {
+      font-size: 16px;
+    }
+  }
+  
+  .analysis-section {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .card {
+    padding: 12px;
+  }
+  
+  .stats-section .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .stat-item {
+    padding: 10px;
+    gap: 8px;
+    
+    .stat-icon {
+      width: 32px;
+      height: 32px;
+      font-size: 13px;
+    }
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .card {
+    padding: 10px;
+  }
+  
+  .stats-section .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .stat-item {
+    flex-direction: row;
+    
+    .stat-info {
+      text-align: left;
+    }
   }
 }
 </style>

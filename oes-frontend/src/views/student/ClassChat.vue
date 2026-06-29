@@ -486,7 +486,7 @@ watch(() => route.params.id, (newId) => {
 .chat-input {
   display: flex;
   gap: 12px;
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -502,6 +502,8 @@ watch(() => route.params.id, (newId) => {
   right: 0;
   top: 0;
   bottom: 0;
+  width: 300px;
+  max-width: 80%;
   width: 300px;
   background: #fff;
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);

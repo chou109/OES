@@ -224,12 +224,38 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .user-manage {
-  max-width: 1400px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .toolbar {
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 768px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .toolbar .el-input,
+  .toolbar .el-select {
+    width: 100%;
+  }
+  
+  .toolbar .el-button {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .toolbar {
+    gap: 10px;
+  }
 }
 </style>

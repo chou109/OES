@@ -7,9 +7,13 @@
 
     <div class="card">
       <div class="toolbar">
-        <el-input v-model="params.keyword" placeholder="搜索科目" style="width: 200px" clearable @change="loadData" />
-        <el-button type="danger" @click="loadData">搜索</el-button>
-        <el-button type="danger" @click="handleCreate">新增科目</el-button>
+        <div class="search-row">
+          <el-input v-model="params.keyword" placeholder="搜索科目" style="width: 200px" clearable @change="loadData" />
+          <el-button type="danger" @click="loadData">搜索</el-button>
+        </div>
+        <div class="action-row">
+          <el-button type="danger" @click="handleCreate">新增科目</el-button>
+        </div>
       </div>
 
       <el-table :data="tableData" v-loading="loading" stripe>
@@ -117,6 +121,129 @@ onMounted(() => { loadData() })
 </script>
 
 <style lang="scss" scoped>
-.subject-manage { max-width: 1200px; }
-.toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
+.subject-manage {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.page-header {
+  padding: 0 8px;
+  margin-bottom: 20px;
+  
+  h2 {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.3;
+  }
+  
+  p {
+    margin-top: 6px;
+    font-size: clamp(13px, 3vw, 14px);
+    color: #64748b;
+    line-height: 1.5;
+  }
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.toolbar {
+  margin-bottom: 20px;
+}
+
+.search-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 24px;
+  z-index: 100;
+  padding: 16px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin: -20px -20px 20px;
+}
+
+.action-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media screen and (max-width: 768px) {
+  .subject-manage {
+    padding: 0 4px;
+  }
+  
+  .page-header {
+    padding: 0 4px;
+    
+    h2 {
+      font-size: clamp(18px, 4vw, 24px);
+    }
+  }
+  
+  .card {
+    padding: 14px;
+    overflow-x: auto;
+  }
+  
+  .search-row {
+    margin: -14px -14px 16px;
+    padding: 14px;
+    flex-wrap: nowrap;
+
+    .el-input {
+      flex: 1;
+      min-width: 0;
+      width: auto !important;
+    }
+
+    .el-button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+  }
+  
+  .action-row {
+    flex-wrap: nowrap;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .card {
+    padding: 12px;
+  }
+  
+  .search-row {
+    margin: -12px -12px 14px;
+    padding: 12px;
+  }
+  
+  .action-row {
+    gap: 10px;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .card {
+    padding: 10px;
+  }
+  
+  .search-row {
+    margin: -10px -10px 12px;
+    padding: 10px;
+  }
+}
 </style>

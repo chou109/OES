@@ -339,7 +339,10 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .classes {
-  max-width: 1400px;
+  width: 100%;
+  max-width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
 }
 
 .page-header {
@@ -347,14 +350,36 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 0 8px;
+  
+  h2 {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.3;
+  }
 }
 
 .search-form {
   margin-bottom: 0;
 }
 
+.filter-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
 .table-card {
   margin-top: 24px;
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .pagination {
@@ -390,5 +415,114 @@ onMounted(() => {
 
 .mb-4 {
   margin-bottom: 16px;
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 992px) {
+  .filter-card,
+  .table-card {
+    padding: 16px;
+    overflow-x: auto;
+  }
+  
+  .page-header {
+    padding: 0 4px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .classes {
+    padding: 0 4px;
+  }
+  
+  .page-header {
+    padding: 0 4px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .page-header h2 {
+    font-size: clamp(18px, 4vw, 24px);
+  }
+  
+  .filter-card {
+    padding: 14px;
+  }
+  
+  .table-card {
+    padding: 14px;
+    margin-top: 16px;
+  }
+  
+  .search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    
+    :deep(.el-form-item) {
+      margin-bottom: 0;
+      
+      .el-input,
+      .el-select {
+        width: 100%;
+      }
+    }
+  }
+  
+  .student-management {
+    flex-direction: column;
+    height: auto;
+    max-height: 500px;
+    
+    .left-panel,
+    .right-panel {
+      height: 200px;
+    }
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .filter-card {
+    padding: 12px;
+  }
+  
+  .table-card {
+    padding: 12px;
+  }
+  
+  .student-management {
+    gap: 16px;
+    
+    .left-panel,
+    .right-panel {
+      height: 180px;
+    }
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .filter-card {
+    padding: 10px;
+  }
+  
+  .table-card {
+    padding: 10px;
+  }
+  
+  .student-management {
+    gap: 12px;
+    
+    .left-panel h3,
+    .right-panel h3 {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    
+    .left-panel,
+    .right-panel {
+      height: 160px;
+    }
+  }
 }
 </style>

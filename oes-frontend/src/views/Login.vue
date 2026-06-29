@@ -27,7 +27,6 @@
         </div>
       </div>
     </div>
-    <canvas id="wave-connector" class="wave-connector"></canvas>
     <div class="login-right">
       <div class="login-card">
         <!-- 学生/教师登录 -->
@@ -364,63 +363,6 @@ const openRegister = () => {
   loadDepartments()
 }
 
-// 动态波形连接器
-onMounted(() => {
-  const canvas = document.getElementById('wave-connector')
-  if (!canvas) return
-  
-  const ctx = canvas.getContext('2d')
-  canvas.width = 100
-  canvas.height = window.innerHeight
-  
-  let mouseY = canvas.height / 2
-  let targetY = mouseY
-  
-  // 鼠标移动事件
-  window.addEventListener('mousemove', (e) => {
-    if (e.clientX > window.innerWidth - 500 - 100 && e.clientX < window.innerWidth - 500) {
-      targetY = e.clientY
-    }
-  })
-  
-  // 动画循环
-  const animate = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    
-    // 平滑过渡到目标位置
-    mouseY += (targetY - mouseY) * 0.05
-    
-    // 绘制波形
-    ctx.beginPath()
-    ctx.moveTo(0, 0)
-    
-    for (let y = 0; y <= canvas.height; y += 10) {
-      const offset = Math.sin(y * 0.02 + Date.now() * 0.001) * 10
-      const mouseInfluence = Math.exp(-Math.pow((y - mouseY) / 100, 2)) * 20
-      const x = 50 + offset + mouseInfluence
-      ctx.lineTo(x, y)
-    }
-    
-    // 填充渐变
-    const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0)
-    gradient.addColorStop(0, '#FF6A6A')
-    gradient.addColorStop(1, '#f5f7fa')
-    
-    ctx.lineTo(0, canvas.height)
-    ctx.closePath()
-    ctx.fillStyle = gradient
-    ctx.fill()
-    
-    requestAnimationFrame(animate)
-  }
-  
-  animate()
-  
-  // 窗口大小变化时更新
-  window.addEventListener('resize', () => {
-    canvas.height = window.innerHeight
-  })
-})
 </script>
 
 <style lang="scss" scoped>
@@ -428,10 +370,12 @@ onMounted(() => {
   display: flex;
   min-height: 100vh;
   position: relative;
+  width: 100%;
 }
 
 .login-left {
   flex: 1;
+  min-width: 0;
   background: linear-gradient(135deg, #FF6A6A 0%, #CD5C5C 100%);
   padding: 60px;
   display: flex;
@@ -445,11 +389,12 @@ onMounted(() => {
   align-items: center;
   gap: 16px;
   margin-bottom: 40px;
+  flex-wrap: wrap;
 }
 
 .logo {
-  width: 120px;
-  height: 120px;
+  width: clamp(80px, 15vw, 120px);
+  height: clamp(80px, 15vw, 120px);
   border-radius: 20px;
   background: rgba(249, 249, 249, 0.543);
   display: flex;
@@ -457,6 +402,7 @@ onMounted(() => {
   justify-content: center;
   font-size: 32px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .logo img {
@@ -466,17 +412,18 @@ onMounted(() => {
 }
 
 .brand h1 {
-  font-size: 42px;
+  font-size: clamp(28px, 6vw, 42px);
   font-weight: 800;
   letter-spacing: 2px;
   background: linear-gradient(135deg, #ffffff 0%, #ffe0e0 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  margin: 0;
 }
 
 .slogan {
-  font-size: 20px;
+  font-size: clamp(16px, 3vw, 20px);
   font-weight: 600;
   margin-bottom: 60px;
   background: linear-gradient(135deg, #ffffff 0%, #f19292 50%, #ffffff 100%);
@@ -503,7 +450,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 16px;
+  font-size: clamp(14px, 2.5vw, 16px);
   font-weight: 500;
   letter-spacing: 0.5px;
   transition: transform 0.2s ease;
@@ -514,37 +461,31 @@ onMounted(() => {
 }
 
 .feature .el-icon {
-  font-size: 20px;
+  font-size: clamp(16px, 3vw, 20px);
   background: rgba(255, 255, 255, 0.2);
   padding: 8px;
   border-radius: 8px;
-}
-
-.wave-connector {
-  position: fixed;
-  right: 380px;
-  top: 0;
-  width: 120px;
-  height: 100vh;
-  z-index: 10;
-  pointer-events: none;
+  flex-shrink: 0;
 }
 
 .login-right {
   width: 500px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f8fafc;
+  padding: 24px;
 }
 
 .login-card {
-  width: 360px;
+  width: 100%;
+  max-width: 360px;
   padding: 40px;
 }
 
 .login-card h2 {
-  font-size: 28px;
+  font-size: clamp(22px, 5vw, 28px);
   font-weight: 700;
   color: #0f172a;
   margin-bottom: 8px;
@@ -553,6 +494,7 @@ onMounted(() => {
 .subtitle {
   color: #64748b;
   margin-bottom: 32px;
+  font-size: 14px;
 }
 
 .login-btn {
@@ -575,6 +517,7 @@ onMounted(() => {
 
 .demo-accounts .el-tag {
   margin-right: 8px;
+  margin-bottom: 8px;
 }
 
 .login-tabs {
@@ -616,6 +559,7 @@ onMounted(() => {
   justify-content: center;
   gap: 12px;
   margin-top: 20px;
+  flex-wrap: wrap;
 }
 
 .action-buttons.single {
@@ -635,6 +579,93 @@ onMounted(() => {
   
   .el-message__icon {
     color: white !important;
+  }
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 992px) {
+  .login-container {
+    flex-direction: column;
+  }
+  
+  .login-left {
+    padding: 40px 24px;
+    min-height: 300px;
+  }
+  
+  .brand {
+    margin-bottom: 24px;
+  }
+  
+  .slogan {
+    margin-bottom: 32px;
+  }
+  
+  .features {
+    gap: 12px;
+  }
+  
+  .login-right {
+    width: 100%;
+    padding: 32px 24px;
+    min-height: calc(100vh - 300px);
+  }
+  
+  .login-card {
+    padding: 32px;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .login-left {
+    padding: 32px 16px;
+    min-height: 250px;
+  }
+  
+  .brand {
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .feature {
+    justify-content: flex-start;
+  }
+  
+  .login-right {
+    padding: 24px 16px;
+  }
+  
+  .login-card {
+    padding: 24px;
+  }
+  
+  .login-tabs {
+    margin-bottom: 24px;
+  }
+  
+  .subtitle {
+    margin-bottom: 24px;
+  }
+  
+  .demo-accounts {
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .features {
+    grid-template-columns: 1fr;
+  }
+  
+  .feature {
+    font-size: 14px;
   }
 }
 </style>

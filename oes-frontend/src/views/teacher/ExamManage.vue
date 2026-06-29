@@ -471,12 +471,178 @@ onUnmounted(() => { if (monitorTimer) clearInterval(monitorTimer) })
 </script>
 
 <style lang="scss" scoped>
-.exam-manage { max-width: 1400px; }
-.toolbar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-.monitor-stats { margin-bottom: 20px; }
-.stat-item { background: #f8fafc; padding: 16px; border-radius: 10px; text-align: center; }
+.exam-manage {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.page-header {
+  padding: 0 8px;
+  margin-bottom: 20px;
+  
+  h2 {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.3;
+  }
+  
+  p {
+    margin-top: 6px;
+    font-size: clamp(13px, 3vw, 14px);
+    color: #64748b;
+    line-height: 1.5;
+  }
+}
+
+.card {
+  margin-bottom: 20px;
+  margin-left: 8px;
+  margin-right: 8px;
+  width: calc(100% - 16px);
+  box-sizing: border-box;
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.monitor-stats {
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+.stat-item {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 10px;
+  text-align: center;
+}
+
 .stat-item .label { display: block; font-size: 13px; color: #64748b; margin-bottom: 8px; }
 .stat-item .value { font-size: 24px; font-weight: 700; color: #1e293b; }
 .stat-item .value.warning { color: #f59e0b; }
 .stat-item .value.danger { color: #ef4444; }
+
+@media screen and (max-width: 1200px) {
+  .monitor-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .card {
+    padding: 16px;
+    overflow-x: auto;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .exam-manage {
+    padding: 0 4px;
+  }
+  
+  .page-header {
+    padding: 0 4px;
+  }
+  
+  .page-header h2 {
+    font-size: clamp(18px, 4vw, 24px);
+  }
+  
+  .card {
+    padding: 14px;
+    margin-left: 4px;
+    margin-right: 4px;
+    width: calc(100% - 8px);
+    overflow-x: auto;
+  }
+  
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .toolbar .el-input,
+  .toolbar .el-select,
+  .toolbar .el-button {
+    width: 100%;
+  }
+  
+  .monitor-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .stat-item {
+    padding: 12px;
+  }
+  
+  .stat-item .value {
+    font-size: 20px;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .card {
+    padding: 12px;
+  }
+  
+  .toolbar {
+    gap: 10px;
+  }
+  
+  .monitor-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .stat-item {
+    padding: 10px;
+  }
+  
+  .stat-item .label {
+    font-size: 12px;
+  }
+  
+  .stat-item .value {
+    font-size: 18px;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .card {
+    padding: 10px;
+  }
+  
+  .monitor-stats {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .stat-item {
+    padding: 8px;
+  }
+  
+  .stat-item .label {
+    font-size: 11px;
+  }
+  
+  .stat-item .value {
+    font-size: 16px;
+  }
+}
 </style>
