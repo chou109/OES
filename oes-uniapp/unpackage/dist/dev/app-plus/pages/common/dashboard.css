@@ -1,0 +1,222 @@
+/* uni.scss - UniApp全局样式变量 */
+/* 主题色 */
+/* 文字颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 间距变量 */
+/* 字体大小 */
+/* 行高 */
+/* 图片尺寸 */
+/* 导航栏高度 */
+/* 分段器高度 */
+/* 标签栏高度 */
+/* 卡片圆角 */
+.dashboard {
+  padding: 0.75rem;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+.page-header {
+  margin-bottom: 0.75rem;
+}
+.page-header .title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+.page-header .subtitle {
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  box-shadow: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.06);
+}
+.stat-card .stat-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.4375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stat-card .stat-icon .emoji {
+  font-size: 1rem;
+}
+.stat-card .admin-icon {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+}
+.stat-card .teacher-icon {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+.stat-card .student-icon {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+.stat-card .stat-info {
+  flex: 1;
+}
+.stat-card .stat-info .stat-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+.stat-card .stat-info .stat-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.125rem;
+}
+.stat-card .arrow {
+  font-size: 1.25rem;
+  color: #999;
+}
+.card {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.06);
+}
+.card .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.625rem;
+}
+.card .card-header .card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.card .card-header .card-title .card-emoji {
+  font-size: 0.875rem;
+}
+.card .card-header .card-title .title-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+.card .card-header .card-link {
+  font-size: 0.8125rem;
+  color: #dc2626;
+}
+.log-list .log-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 0.03125rem solid #e5e5e5;
+}
+.log-list .log-item:last-child {
+  border-bottom: none;
+}
+.log-list .log-item .log-operator {
+  width: 3.75rem;
+  font-size: 0.8125rem;
+  color: #333;
+}
+.log-list .log-item .log-action {
+  flex: 1;
+  font-size: 0.8125rem;
+  color: #666;
+}
+.log-list .log-item .log-time {
+  font-size: 0.75rem;
+  color: #999;
+}
+.exam-list .exam-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0;
+  border-bottom: 0.03125rem solid #e5e5e5;
+}
+.exam-list .exam-item:last-child {
+  border-bottom: none;
+}
+.exam-list .exam-item .exam-info {
+  flex: 1;
+}
+.exam-list .exam-item .exam-info .exam-title {
+  font-size: 0.875rem;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+.exam-list .exam-item .exam-info .exam-meta {
+  font-size: 0.75rem;
+  color: #999;
+}
+.exam-list .exam-item .exam-status .status-tag {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+.exam-list .exam-item .exam-status .status-tag.pending {
+  background: rgba(245, 158, 11, 0.1);
+}
+.exam-list .exam-item .exam-status .status-tag.pending .status-text {
+  color: #f59e0b;
+}
+.exam-list .exam-item .exam-status .status-tag.ongoing {
+  background: rgba(34, 197, 94, 0.1);
+}
+.exam-list .exam-item .exam-status .status-tag.ongoing .status-text {
+  color: #22c55e;
+}
+.exam-list .exam-item .exam-status .status-tag.finished {
+  background: rgba(100, 116, 139, 0.1);
+}
+.exam-list .exam-item .exam-status .status-tag.finished .status-text {
+  color: #64748b;
+}
+.exam-list .exam-item .exam-status .status-tag .status-text {
+  font-size: 0.75rem;
+}
+.exam-list .exam-item .exam-btn {
+  height: 2rem;
+  padding: 0 0.75rem;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  border-radius: 0.25rem;
+  border: none;
+}
+.exam-list .exam-item .exam-btn .btn-text {
+  font-size: 0.8125rem;
+  color: #fff;
+}
+.exam-list .exam-item .exam-btn[disabled] {
+  background: #ccc;
+}
+.tips-card .tips-list .tip-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 0.375rem 0;
+}
+.tips-card .tips-list .tip-item .tip-number {
+  width: 1.25rem;
+  font-size: 0.8125rem;
+  color: #dc2626;
+  font-weight: 600;
+}
+.tips-card .tips-list .tip-item .tip-text {
+  font-size: 0.8125rem;
+  color: #666;
+}
+.empty {
+  padding: 1.25rem;
+  text-align: center;
+}
+.empty .empty-text {
+  font-size: 0.875rem;
+  color: #999;
+}

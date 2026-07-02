@@ -1,0 +1,63 @@
+/* uni.scss - UniApp全局样式变量 */
+/* 主题色 */
+/* 文字颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 间距变量 */
+/* 字体大小 */
+/* 行高 */
+/* 图片尺寸 */
+/* 导航栏高度 */
+/* 分段器高度 */
+/* 标签栏高度 */
+/* 卡片圆角 */
+.manage-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 0.75rem;
+}
+.page-header .title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #333;
+}
+.log-list {
+  background: #fff;
+  border-radius: 0.5rem;
+}
+.log-list .log-item {
+  padding: 0.75rem;
+  border-bottom: 0.03125rem solid #e5e5e5;
+}
+.log-list .log-item .log-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.375rem;
+}
+.log-list .log-item .log-header .log-operator {
+  font-size: 0.875rem;
+  color: #333;
+  font-weight: 500;
+}
+.log-list .log-item .log-header .log-time {
+  font-size: 0.75rem;
+  color: #999;
+}
+.log-list .log-item .log-body .log-action {
+  font-size: 0.8125rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+.log-list .log-item .log-body .log-target {
+  font-size: 0.75rem;
+  color: #999;
+}
+.empty {
+  padding: 1.875rem;
+  text-align: center;
+}
+.empty .empty-text {
+  font-size: 0.875rem;
+  color: #999;
+}

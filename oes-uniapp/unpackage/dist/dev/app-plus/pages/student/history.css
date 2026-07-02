@@ -1,0 +1,124 @@
+
+.history[data-v-cee26447] {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 0.75rem;
+}
+.page-header[data-v-cee26447] {
+  margin-bottom: 1rem;
+}
+.title[data-v-cee26447] {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.375rem;
+}
+.subtitle[data-v-cee26447] {
+  display: block;
+  font-size: 0.875rem;
+  color: #666;
+}
+.search-bar[data-v-cee26447] {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  gap: 0.625rem;
+}
+.search-input[data-v-cee26447] {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+}
+.search-input uni-input[data-v-cee26447] {
+  flex: 1;
+  margin-left: 0.375rem;
+  font-size: 0.875rem;
+}
+.search-btn[data-v-cee26447] {
+  width: 5rem;
+  height: 2.25rem;
+  line-height: 2.25rem;
+  background: #f56c6c;
+  color: #fff;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+.card-list[data-v-cee26447] {
+  margin-top: 0.75rem;
+}
+.card-item[data-v-cee26447] {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.875rem;
+  margin-bottom: 0.625rem;
+}
+.card-header[data-v-cee26447] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.card-title[data-v-cee26447] {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  flex: 1;
+}
+.score-badge[data-v-cee26447] {
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+.score-badge.pass[data-v-cee26447] {
+  background: #f0f9ff;
+  color: #67c23a;
+}
+.score-badge.fail[data-v-cee26447] {
+  background: #fef0f0;
+  color: #f56c6c;
+}
+.card-info[data-v-cee26447] {
+  margin-bottom: 0.625rem;
+}
+.info-row[data-v-cee26447] {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+.info-text[data-v-cee26447] {
+  margin-left: 0.375rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+.card-actions[data-v-cee26447] {
+  display: flex;
+  justify-content: flex-end;
+}
+.detail-btn[data-v-cee26447] {
+  width: 6.25rem;
+  height: 2.25rem;
+  line-height: 2.25rem;
+  background: #409eff;
+  color: #fff;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+.empty[data-v-cee26447] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3.75rem 1.5rem;
+}
+.empty-text[data-v-cee26447] {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: #999;
+}

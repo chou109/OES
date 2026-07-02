@@ -1,0 +1,226 @@
+{
+  "pages": [
+    {
+      "path": "pages/common/login",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/common/register",
+      "style": {
+        "navigationBarTitleText": "注册",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/common/dashboard",
+      "style": {
+        "navigationBarTitleText": "首页",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/common/account",
+      "style": {
+        "navigationBarTitleText": "账号管理",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/admin/user-manage",
+      "style": {
+        "navigationBarTitleText": "用户管理",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/admin/department-manage",
+      "style": {
+        "navigationBarTitleText": "院系管理",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/admin/class-manage",
+      "style": {
+        "navigationBarTitleText": "班级管理",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/admin/log-manage",
+      "style": {
+        "navigationBarTitleText": "日志管理",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/admin/statistics",
+      "style": {
+        "navigationBarTitleText": "数据统计",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/teacher/my-classes",
+      "style": {
+        "navigationBarTitleText": "我的班级",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/teacher/class-chat",
+      "style": {
+        "navigationBarTitleText": "班级聊天",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/teacher/subject-manage",
+      "style": {
+        "navigationBarTitleText": "科目管理",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/teacher/question-manage",
+      "style": {
+        "navigationBarTitleText": "题库管理",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/teacher/paper-manage",
+      "style": {
+        "navigationBarTitleText": "试卷管理",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/teacher/exam-manage",
+      "style": {
+        "navigationBarTitleText": "考试管理",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/teacher/exam-record-manage",
+      "style": {
+        "navigationBarTitleText": "考试记录",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/student/my-classes",
+      "style": {
+        "navigationBarTitleText": "我的班级",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/student/class-chat",
+      "style": {
+        "navigationBarTitleText": "班级聊天",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/student/exam-list",
+      "style": {
+        "navigationBarTitleText": "考试列表",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/student/exam-take",
+      "style": {
+        "navigationBarTitleText": "参加考试",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white",
+        "enablePullDownRefresh": false,
+        "disableScroll": true
+      }
+    },
+    {
+      "path": "pages/student/history",
+      "style": {
+        "navigationBarTitleText": "考试历史",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/student/wrong-questions",
+      "style": {
+        "navigationBarTitleText": "错题本",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/student/statistics",
+      "style": {
+        "navigationBarTitleText": "学习统计",
+        "navigationBarBackgroundColor": "#dc2626",
+        "navigationBarTextStyle": "white"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "在线考试系统",
+    "navigationBarBackgroundColor": "#dc2626",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#666666",
+    "selectedColor": "#dc2626",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/common/dashboard",
+        "text": "首页",
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/common/account",
+        "text": "我的",
+        "iconPath": "static/tabbar/user.png",
+        "selectedIconPath": "static/tabbar/user-active.png"
+      }
+    ]
+  },
+	"condition" : { //模式配置，仅开发期间生效
+		"current": 0, //当前激活的模式(list 的索引项)
+		"list": [
+			{
+				"name": "测试", //模式名称
+				"path": "pages/common/login", //启动页面，必选
+				"query": "" //启动参数，在页面的onLoad函数里面得到
+			}
+		]
+	}
+}

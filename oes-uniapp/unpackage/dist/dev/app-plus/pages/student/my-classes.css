@@ -1,0 +1,111 @@
+
+.my-classes[data-v-c97905fd] {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 0.75rem;
+}
+.page-header[data-v-c97905fd] {
+  margin-bottom: 1rem;
+}
+.title[data-v-c97905fd] {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.375rem;
+}
+.subtitle[data-v-c97905fd] {
+  display: block;
+  font-size: 0.875rem;
+  color: #666;
+}
+.join-card[data-v-c97905fd] {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.join-form[data-v-c97905fd] {
+  display: flex;
+  gap: 0.625rem;
+}
+.join-input[data-v-c97905fd] {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+}
+.join-input uni-input[data-v-c97905fd] {
+  flex: 1;
+  margin-left: 0.375rem;
+  font-size: 0.875rem;
+}
+.join-btn[data-v-c97905fd] {
+  width: 6.25rem;
+  height: 2.25rem;
+  line-height: 2.25rem;
+  background: #f56c6c;
+  color: #fff;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+.class-list[data-v-c97905fd] {
+  margin-top: 0.75rem;
+}
+.class-card[data-v-c97905fd] {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.875rem;
+  margin-bottom: 0.625rem;
+}
+.class-info[data-v-c97905fd] {
+  margin-bottom: 0.625rem;
+}
+.class-name[data-v-c97905fd] {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.class-meta[data-v-c97905fd] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.meta-item[data-v-c97905fd] {
+  display: flex;
+  align-items: center;
+}
+.meta-text[data-v-c97905fd] {
+  margin-left: 0.375rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+.class-actions[data-v-c97905fd] {
+  display: flex;
+  justify-content: flex-end;
+}
+.enter-btn[data-v-c97905fd] {
+  width: 6.25rem;
+  height: 2.25rem;
+  line-height: 2.25rem;
+  background: #409eff;
+  color: #fff;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+.empty[data-v-c97905fd] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3.75rem 1.5rem;
+}
+.empty-text[data-v-c97905fd] {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: #999;
+}

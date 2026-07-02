@@ -1,0 +1,164 @@
+
+.statistics[data-v-508c3e4d] {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 0.75rem;
+}
+.page-header[data-v-508c3e4d] {
+  margin-bottom: 1rem;
+}
+.title[data-v-508c3e4d] {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.375rem;
+}
+.subtitle[data-v-508c3e4d] {
+  display: block;
+  font-size: 0.875rem;
+  color: #666;
+}
+.stat-grid[data-v-508c3e4d] {
+  display: flex;
+  gap: 0.625rem;
+  margin-bottom: 0.75rem;
+}
+.stat-card[data-v-508c3e4d] {
+  flex: 1;
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.stat-icon[data-v-508c3e4d] {
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stat-info[data-v-508c3e4d] {
+  flex: 1;
+}
+.stat-value[data-v-508c3e4d] {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 0.125rem;
+}
+.stat-label[data-v-508c3e4d] {
+  font-size: 0.75rem;
+  color: #666;
+}
+.card[data-v-508c3e4d] {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+.card-header[data-v-508c3e4d] {
+  margin-bottom: 0.625rem;
+}
+.card-title[data-v-508c3e4d] {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+.subject-list[data-v-508c3e4d] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+.subject-item[data-v-508c3e4d] {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+.subject-info[data-v-508c3e4d] {
+  flex: 1;
+}
+.subject-name[data-v-508c3e4d] {
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 0.125rem;
+}
+.subject-exams[data-v-508c3e4d] {
+  font-size: 0.75rem;
+  color: #666;
+}
+.subject-score[data-v-508c3e4d] {
+  text-align: right;
+}
+.score-value[data-v-508c3e4d] {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+.score-unit[data-v-508c3e4d] {
+  font-size: 0.75rem;
+  color: #666;
+}
+.score-bar[data-v-508c3e4d] {
+  width: 5rem;
+  height: 0.375rem;
+  background: #f5f5f5;
+  border-radius: 0.1875rem;
+  overflow: hidden;
+}
+.bar-fill[data-v-508c3e4d] {
+  height: 100%;
+  border-radius: 0.1875rem;
+}
+.answer-stats[data-v-508c3e4d] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+.answer-item[data-v-508c3e4d] {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+.answer-icon[data-v-508c3e4d] {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.answer-icon.correct[data-v-508c3e4d] {
+  background: #f0f9ff;
+}
+.answer-icon.wrong[data-v-508c3e4d] {
+  background: #fef0f0;
+}
+.answer-icon.skip[data-v-508c3e4d] {
+  background: #f4f4f5;
+}
+.answer-info[data-v-508c3e4d] {
+  flex: 1;
+}
+.answer-count[data-v-508c3e4d] {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 0.125rem;
+}
+.answer-label[data-v-508c3e4d] {
+  font-size: 0.75rem;
+  color: #666;
+}
+.answer-rate[data-v-508c3e4d] {
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: #409eff;
+}

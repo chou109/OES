@@ -1,0 +1,35 @@
+{
+  "name": "oes-uniapp",
+  "version": "1.0.0",
+  "description": "在线考试系统UniApp移动端",
+  "scripts": {
+    "dev:h5": "npx vite@5.2.8 --mode h5",
+    "build:h5": "npx vite@5.2.8 build --mode h5",
+    "dev:app": "npx vite@5.2.8 --mode app",
+    "build:app": "npx vite@5.2.8 build --mode app",
+    "dev:mp-weixin": "npx vite@5.2.8 --mode mp-weixin",
+    "build:mp-weixin": "npx vite@5.2.8 build --mode mp-weixin"
+  },
+  "overrides": {
+    "vite": "5.2.8"
+  },
+  "dependencies": {
+    "@dcloudio/uni-app": "3.0.0-alpha-5010420260626001",
+    "@dcloudio/uni-app-plus": "3.0.0-alpha-5010420260626001",
+    "@dcloudio/uni-components": "3.0.0-alpha-5010420260626001",
+    "@dcloudio/uni-h5": "3.0.0-alpha-5010420260626001",
+    "@dcloudio/uni-mp-weixin": "3.0.0-alpha-5010420260626001",
+    "@dcloudio/uni-ui": "^1.5.12",
+    "pinia": "^2.3.1",
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "^3.4.8",
+    "@dcloudio/uni-automator": "3.0.0-alpha-5010420260626001",
+    "@dcloudio/uni-cli-shared": "3.0.0-alpha-5010420260626001",
+    "@dcloudio/uni-stacktracey": "3.0.0-alpha-5010420260626001",
+    "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5010420260626001",
+    "sass": "^1.77.8",
+    "vite": "^5.2.8"
+  }
+}

@@ -1,0 +1,307 @@
+
+.class-chat[data-v-a4d58c53] {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+}
+.chat-header[data-v-a4d58c53] {
+  background: #fff;
+  padding: 0.75rem 1rem;
+  border-bottom: 0.03125rem solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header-left[data-v-a4d58c53] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.back-btn[data-v-a4d58c53] {
+  padding: 0.25rem;
+}
+.header-info[data-v-a4d58c53] {
+  display: flex;
+  flex-direction: column;
+}
+.class-name[data-v-a4d58c53] {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+.member-count[data-v-a4d58c53] {
+  font-size: 0.75rem;
+  color: #666;
+}
+.header-right[data-v-a4d58c53] {
+  display: flex;
+  gap: 0.5rem;
+}
+.member-btn[data-v-a4d58c53], .more-btn[data-v-a4d58c53] {
+  padding: 0.25rem;
+}
+.chat-body[data-v-a4d58c53] {
+  flex: 1;
+  height: calc(100vh - 5.625rem);
+}
+.message-list[data-v-a4d58c53] {
+  padding: 0.75rem;
+}
+.message-item[data-v-a4d58c53] {
+  display: flex;
+  margin-bottom: 0.75rem;
+  align-items: flex-start;
+}
+.message-item.is-self[data-v-a4d58c53] {
+  flex-direction: row-reverse;
+}
+.message-avatar[data-v-a4d58c53] {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.message-avatar uni-image[data-v-a4d58c53] {
+  width: 100%;
+  height: 100%;
+}
+.message-content-wrapper[data-v-a4d58c53] {
+  max-width: 70%;
+  margin-left: 0.5rem;
+}
+.message-item.is-self .message-content-wrapper[data-v-a4d58c53] {
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+.message-sender[data-v-a4d58c53] {
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+.message-item.is-self .message-sender[data-v-a4d58c53] {
+  text-align: right;
+}
+.message-bubble[data-v-a4d58c53] {
+  background: #fff;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.375rem;
+  display: inline-block;
+}
+.message-item.is-self .message-bubble[data-v-a4d58c53] {
+  background: #409eff;
+  color: #fff;
+}
+.message-text[data-v-a4d58c53] {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.message-time[data-v-a4d58c53] {
+  font-size: 0.625rem;
+  color: #999;
+  margin-top: 0.25rem;
+  display: block;
+}
+.message-item.is-self .message-time[data-v-a4d58c53] {
+  text-align: right;
+}
+.exam-notice[data-v-a4d58c53] {
+  background: #fff;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  border: 0.0625rem solid #409eff;
+}
+.notice-header[data-v-a4d58c53] {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+.notice-icon[data-v-a4d58c53] {
+  font-size: 0.875rem;
+}
+.notice-title[data-v-a4d58c53] {
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: #333;
+  flex: 1;
+}
+.notice-badge[data-v-a4d58c53] {
+  padding: 0.125rem 0.375rem;
+  background: #409eff;
+  color: #fff;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+}
+.notice-info[data-v-a4d58c53] {
+  margin-bottom: 0.5rem;
+}
+.info-item[data-v-a4d58c53] {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  color: #666;
+}
+.info-icon[data-v-a4d58c53] {
+  margin-right: 0.25rem;
+}
+.chat-input-wrapper[data-v-a4d58c53] {
+  background: #fff;
+  padding: 0.75rem 1rem;
+  border-top: 0.03125rem solid #eee;
+}
+.chat-input[data-v-a4d58c53] {
+  display: flex;
+  gap: 0.5rem;
+}
+.chat-input uni-input[data-v-a4d58c53] {
+  flex: 1;
+  height: 2.25rem;
+  background: #f5f5f5;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+.send-btn[data-v-a4d58c53] {
+  width: 3.75rem;
+  height: 2.25rem;
+  line-height: 2.25rem;
+  background: #409eff;
+  color: #fff;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+.send-btn[data-v-a4d58c53]:disabled {
+  background: #f5f5f5;
+  color: #999;
+}
+
+/* 弹窗样式 */
+.modal[data-v-a4d58c53] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-content[data-v-a4d58c53] {
+  width: 90%;
+  max-height: 70vh;
+  background: #fff;
+  border-radius: 0.5rem;
+}
+.modal-header[data-v-a4d58c53] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 0.03125rem solid #eee;
+}
+.modal-title[data-v-a4d58c53] {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+.modal-close[data-v-a4d58c53] {
+  padding: 0.25rem;
+}
+.members-list[data-v-a4d58c53] {
+  padding: 0.75rem;
+  max-height: 60vh;
+}
+.member-item[data-v-a4d58c53] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem;
+  background: #f5f5f5;
+  border-radius: 0.375rem;
+  margin-bottom: 0.375rem;
+}
+.member-info[data-v-a4d58c53] {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.member-name[data-v-a4d58c53] {
+  font-size: 0.875rem;
+  color: #333;
+}
+.member-role[data-v-a4d58c53] {
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+}
+.role-creator[data-v-a4d58c53] {
+  background: #f56c6c;
+  color: #fff;
+}
+.role-teacher[data-v-a4d58c53] {
+  background: #e6a23c;
+  color: #fff;
+}
+.role-student[data-v-a4d58c53] {
+  background: #409eff;
+  color: #fff;
+}
+.mute-status[data-v-a4d58c53] {
+  padding: 0.125rem 0.375rem;
+  background: #909399;
+  color: #fff;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+}
+.member-actions[data-v-a4d58c53] {
+  display: flex;
+  gap: 0.25rem;
+}
+.mute-btn[data-v-a4d58c53], .unmute-btn[data-v-a4d58c53] {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+}
+.mute-btn[data-v-a4d58c53] {
+  background: #f56c6c;
+  color: #fff;
+}
+.unmute-btn[data-v-a4d58c53] {
+  background: #67c23a;
+  color: #fff;
+}
+
+/* 操作面板 */
+.action-panel[data-v-a4d58c53] {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 1rem 1rem 0 0;
+  padding: 1rem;
+}
+.action-item[data-v-a4d58c53] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  margin-bottom: 0.375rem;
+  background: #f5f5f5;
+}
+.action-item.danger[data-v-a4d58c53] {
+  background: #f56c6c;
+  color: #fff;
+  justify-content: center;
+}
+.action-item uni-text[data-v-a4d58c53] {
+  font-size: 0.875rem;
+  color: #333;
+}

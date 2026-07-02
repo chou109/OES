@@ -1,0 +1,67 @@
+/* uni.scss - UniApp全局样式变量 */
+
+/* 主题色 */
+$uni-primary: #dc2626;
+$uni-primary-light: #f87171;
+$uni-primary-dark: #b91c1c;
+$uni-success: #22c55e;
+$uni-warning: #f59e0b;
+$uni-error: #ef4444;
+
+/* 文字颜色 */
+$uni-text-color: #333333;
+$uni-text-color-inverse: #ffffff;
+$uni-text-color-grey: #999999;
+$uni-text-color-placeholder: #cccccc;
+
+/* 背景颜色 */
+$uni-bg-color: #ffffff;
+$uni-bg-color-grey: #f8f8f8;
+$uni-bg-color-hover: #f1f1f1;
+$uni-bg-color-mask: rgba(0, 0, 0, 0.4);
+
+/* 边框颜色 */
+$uni-border-color: #e5e5e5;
+
+/* 尺寸变量 */
+$uni-border-radius-sm: 4rpx;
+$uni-border-radius-base: 8rpx;
+$uni-border-radius-lg: 16rpx;
+$uni-border-radius-circle: 50%;
+
+/* 间距变量 */
+$uni-spacing-row-sm: 8rpx;
+$uni-spacing-row-base: 16rpx;
+$uni-spacing-row-lg: 24rpx;
+$uni-spacing-col-sm: 8rpx;
+$uni-spacing-col-base: 16rpx;
+$uni-spacing-col-lg: 24rpx;
+
+/* 字体大小 */
+$uni-font-size-sm: 24rpx;
+$uni-font-size-base: 28rpx;
+$uni-font-size-lg: 32rpx;
+$uni-font-size-xl: 36rpx;
+
+/* 行高 */
+$uni-line-height-base: 1.5;
+$uni-line-height-lg: 2;
+
+/* 图片尺寸 */
+$uni-img-size-sm: 40rpx;
+$uni-img-size-base: 64rpx;
+$uni-img-size-lg: 96rpx;
+
+/* 导航栏高度 */
+$uni-nav-height: 88rpx;
+$uni-status-bar-height: 44rpx;
+
+/* 分段器高度 */
+$uni-segment-height: 60rpx;
+$uni-segment-width: 200rpx;
+
+/* 标签栏高度 */
+$uni-tab-bar-height: 100rpx;
+
+/* 卡片圆角 */
+$uni-card-radius: 16rpx;
