@@ -31,7 +31,10 @@ if (uni.restoreGlobal) {
 }
 (function(vue) {
   "use strict";
+  const ON_SHOW = "onShow";
+  const ON_HIDE = "onHide";
   const ON_LOAD = "onLoad";
+  const ON_UNLOAD = "onUnload";
   function formatAppLog(type, filename, ...args) {
     if (uni.__log__) {
       uni.__log__(type, filename, ...args);
@@ -42,8 +45,11 @@ if (uni.restoreGlobal) {
   const createHook = (lifecycle) => (hook, target = vue.getCurrentInstance()) => {
     !vue.isInSSRComponentSetup && vue.injectHook(lifecycle, hook, target);
   };
+  const onShow = /* @__PURE__ */ createHook(ON_SHOW);
+  const onHide = /* @__PURE__ */ createHook(ON_HIDE);
   const onLoad = /* @__PURE__ */ createHook(ON_LOAD);
-  const BASE_URL = "http://192.168.34.49:8081/api";
+  const onUnload = /* @__PURE__ */ createHook(ON_UNLOAD);
+  const BASE_URL = "http://192.168.1.92:8081/api";
   const requestInterceptor = (config) => {
     formatAppLog("log", "at utils/request.js:18", "请求拦截器 - 原始配置:", JSON.stringify(config));
     if (!config) {
@@ -5886,8 +5892,11 @@ This will fail in production.`);
       const selectedFormType = vue.computed(() => {
         return questionTypes.find((t) => t.value === form.type) || {};
       });
-      vue.computed(() => {
+      const selectedFormSubject = vue.computed(() => {
         return subjects.value.find((s) => String(s.id) === String(form.subjectId));
+      });
+      const subjectOptions = vue.computed(() => {
+        return [{ id: null, name: "全部" }, ...subjects.value];
       });
       const selectedSubjectName = vue.computed(() => {
         const s = subjects.value.find((s2) => s2.id === selectedSubjectId.value);
@@ -5919,7 +5928,7 @@ This will fail in production.`);
         return map[type] || "";
       };
       const getSubjectName = (subjectId) => {
-        const s = subjects.value.find((s2) => s2.id === subjectId);
+        const s = subjects.value.find((s2) => String(s2.id) === String(subjectId));
         return (s == null ? void 0 : s.name) || "未知科目";
       };
       const truncate = (text, len) => {
@@ -5989,10 +5998,10 @@ This will fail in production.`);
         try {
           const res = await subjectApi.list();
           if (res.code === 200) {
-            subjects.value = [{ id: null, name: "全部" }, ...res.data];
+            subjects.value = res.data;
           }
         } catch (e) {
-          formatAppLog("error", "at pages/teacher/question-manage.vue:308", e);
+          formatAppLog("error", "at pages/teacher/question-manage.vue:333", e);
         }
       };
       const editQuestion = async (item) => {
@@ -6000,7 +6009,7 @@ This will fail in production.`);
         form.type = item.type;
         form.subjectId = item.subjectId;
         form.content = item.content;
-        form.correctAnswer = item.correctAnswer;
+        form.correctAnswer = item.answer || item.correctAnswer || "";
         form.score = item.score ? item.score.toString() : "";
         if (item.type === "JUDGMENT") {
           form.options = ["正确", "错误"];
@@ -6057,7 +6066,7 @@ This will fail in production.`);
             subjectId: form.subjectId,
             content: form.content,
             options: form.options.filter((o) => o.trim()).join("|"),
-            correctAnswer: form.correctAnswer,
+            answer: form.correctAnswer,
             score: form.score ? parseInt(form.score) : 10
           };
           let res;
@@ -6075,7 +6084,7 @@ This will fail in production.`);
             uni.showToast({ title: res.message || "保存失败", icon: "none" });
           }
         } catch (e) {
-          formatAppLog("error", "at pages/teacher/question-manage.vue:398", e);
+          formatAppLog("error", "at pages/teacher/question-manage.vue:423", e);
           uni.showToast({ title: "保存失败", icon: "none" });
         } finally {
           uni.hideLoading();
@@ -6167,7 +6176,7 @@ This will fail in production.`);
               if (res.code === 200)
                 successCount++;
             } catch (e) {
-              formatAppLog("error", "at pages/teacher/question-manage.vue:500", "导入单题失败:", e);
+              formatAppLog("error", "at pages/teacher/question-manage.vue:525", "导入单题失败:", e);
             }
           }
           uni.showToast({ title: `导入完成，成功${successCount}/${questions.length}题`, icon: "success" });
@@ -6176,11 +6185,22 @@ This will fail in production.`);
           importSubject.value = null;
           loadData();
         } catch (e) {
-          formatAppLog("error", "at pages/teacher/question-manage.vue:511", e);
+          formatAppLog("error", "at pages/teacher/question-manage.vue:536", e);
           uni.showToast({ title: "导入失败", icon: "none" });
         } finally {
           uni.hideLoading();
         }
+      };
+      const copyExample = (text) => {
+        uni.setClipboardData({
+          data: text,
+          success: () => {
+            uni.showToast({ title: "复制成功", icon: "success", duration: 1500 });
+          },
+          fail: () => {
+            uni.showToast({ title: "复制失败", icon: "none" });
+          }
+        });
       };
       const deleteQuestion = async (item) => {
         uni.showModal({
@@ -6212,11 +6232,13 @@ This will fail in production.`);
         questionList,
         subjects,
         questionTypes,
+        subjectOptions,
         selectedSubjectName,
         selectedTypeName,
         showQuestionForm,
         editingQuestion,
         selectedFormType,
+        selectedFormSubject,
         form,
         showImportModal,
         importText,
@@ -6236,6 +6258,7 @@ This will fail in production.`);
         editQuestion,
         submitQuestion,
         submitImport,
+        copyExample,
         deleteQuestion
       };
     }
@@ -6250,7 +6273,7 @@ This will fail in production.`);
       vue.createElementVNode("view", { class: "search-bar" }, [
         vue.createElementVNode("picker", {
           mode: "selector",
-          range: $setup.subjects,
+          range: $setup.subjectOptions,
           "range-key": "name",
           onChange: _cache[0] || (_cache[0] = (...args) => $setup.onSubjectChange && $setup.onSubjectChange(...args))
         }, [
@@ -6432,7 +6455,7 @@ This will fail in production.`);
                   vue.createElementVNode(
                     "text",
                     null,
-                    vue.toDisplayString(((_a = _ctx.selectedFormSubject) == null ? void 0 : _a.name) || "请选择科目"),
+                    vue.toDisplayString(((_a = $setup.selectedFormSubject) == null ? void 0 : _a.name) || "请选择科目"),
                     1
                     /* TEXT */
                   )
@@ -6556,11 +6579,11 @@ This will fail in production.`);
       $setup.showImportModal ? (vue.openBlock(), vue.createElementBlock("view", {
         key: 1,
         class: "modal",
-        onClick: _cache[23] || (_cache[23] = ($event) => $setup.showImportModal = false)
+        onClick: _cache[28] || (_cache[28] = ($event) => $setup.showImportModal = false)
       }, [
         vue.createElementVNode("view", {
           class: "import-modal",
-          onClick: _cache[22] || (_cache[22] = vue.withModifiers(() => {
+          onClick: _cache[27] || (_cache[27] = vue.withModifiers(() => {
           }, ["stop"]))
         }, [
           vue.createElementVNode("view", { class: "modal-header" }, [
@@ -6597,12 +6620,52 @@ This will fail in production.`);
             ]),
             vue.createElementVNode("view", { class: "form-item" }, [
               vue.createElementVNode("text", { class: "form-label" }, "导入文本 *"),
-              vue.createElementVNode("text", { class: "form-hint" }, "格式示例： 单选|题目内容|选项A|选项B|选项C|选项D|正确答案|分值 判断|题目内容|正确答案|分值 填空|题目内容|正确答案|分值 简答|题目内容|参考答案|分值"),
+              vue.createElementVNode("view", { class: "form-hint" }, [
+                vue.createElementVNode("text", { class: "hint-title" }, "格式说明（每行一题，使用|分隔）："),
+                vue.createElementVNode("view", { class: "hint-example" }, [
+                  vue.createElementVNode("view", {
+                    class: "hint-line",
+                    onClick: _cache[19] || (_cache[19] = ($event) => $setup.copyExample("单选|题目内容是什么？|选项A内容|选项B内容|选项C内容|选项D内容|A|5"))
+                  }, [
+                    vue.createElementVNode("text", null, "单选|题目内容是什么？|选项A内容|选项B内容|选项C内容|选项D内容|A|5"),
+                    vue.createElementVNode("text", { class: "copy-icon" }, "📋")
+                  ]),
+                  vue.createElementVNode("view", {
+                    class: "hint-line",
+                    onClick: _cache[20] || (_cache[20] = ($event) => $setup.copyExample("多选|哪些是正确的？|选项A|选项B|选项C|选项D|A,C|10"))
+                  }, [
+                    vue.createElementVNode("text", null, "多选|哪些是正确的？|选项A|选项B|选项C|选项D|A,C|10"),
+                    vue.createElementVNode("text", { class: "copy-icon" }, "📋")
+                  ]),
+                  vue.createElementVNode("view", {
+                    class: "hint-line",
+                    onClick: _cache[21] || (_cache[21] = ($event) => $setup.copyExample("判断|这句话是正确的|A|2"))
+                  }, [
+                    vue.createElementVNode("text", null, "判断|这句话是正确的|A|2"),
+                    vue.createElementVNode("text", { class: "copy-icon" }, "📋")
+                  ]),
+                  vue.createElementVNode("view", {
+                    class: "hint-line",
+                    onClick: _cache[22] || (_cache[22] = ($event) => $setup.copyExample("填空|答案是____|答案内容|5"))
+                  }, [
+                    vue.createElementVNode("text", null, "填空|答案是____|答案内容|5"),
+                    vue.createElementVNode("text", { class: "copy-icon" }, "📋")
+                  ]),
+                  vue.createElementVNode("view", {
+                    class: "hint-line",
+                    onClick: _cache[23] || (_cache[23] = ($event) => $setup.copyExample("简答|请简述原理|参考答案内容|15"))
+                  }, [
+                    vue.createElementVNode("text", null, "简答|请简述原理|参考答案内容|15"),
+                    vue.createElementVNode("text", { class: "copy-icon" }, "📋")
+                  ])
+                ]),
+                vue.createElementVNode("text", { class: "hint-note" }, "注：判断题正确答案填A，错误填B；多选题答案用逗号分隔。点击示例可复制")
+              ]),
               vue.withDirectives(vue.createElementVNode(
                 "textarea",
                 {
                   class: "form-textarea",
-                  "onUpdate:modelValue": _cache[19] || (_cache[19] = ($event) => $setup.importText = $event),
+                  "onUpdate:modelValue": _cache[24] || (_cache[24] = ($event) => $setup.importText = $event),
                   placeholder: "请粘贴题目文本..."
                 },
                 null,
@@ -6616,11 +6679,11 @@ This will fail in production.`);
           vue.createElementVNode("view", { class: "modal-footer" }, [
             vue.createElementVNode("button", {
               class: "modal-btn cancel",
-              onClick: _cache[20] || (_cache[20] = ($event) => $setup.showImportModal = false)
+              onClick: _cache[25] || (_cache[25] = ($event) => $setup.showImportModal = false)
             }, "取消"),
             vue.createElementVNode("button", {
               class: "modal-btn confirm",
-              onClick: _cache[21] || (_cache[21] = (...args) => $setup.submitImport && $setup.submitImport(...args))
+              onClick: _cache[26] || (_cache[26] = (...args) => $setup.submitImport && $setup.submitImport(...args))
             }, "导入")
           ])
         ])
@@ -7848,7 +7911,13 @@ This will fail in production.`);
         title: "",
         duration: "",
         startDate: "",
-        startTime: ""
+        startTime: "",
+        passRate: "60",
+        shuffleQuestions: false,
+        shuffleOptions: false,
+        leaveDetection: false,
+        maxLeaveCount: "3",
+        allowViewAfterExam: false
       });
       const goBack = () => {
         uni.navigateBack();
@@ -7872,6 +7941,18 @@ This will fail in production.`);
       };
       const onStartTimeChange = (e) => {
         form.startTime = e.detail.value;
+      };
+      const onShuffleQuestionsChange = (e) => {
+        form.shuffleQuestions = e.detail.value;
+      };
+      const onShuffleOptionsChange = (e) => {
+        form.shuffleOptions = e.detail.value;
+      };
+      const onLeaveDetectionChange = (e) => {
+        form.leaveDetection = e.detail.value;
+      };
+      const onAllowViewAfterExamChange = (e) => {
+        form.allowViewAfterExam = e.detail.value;
       };
       const submitForm = async () => {
         if (!form.title.trim()) {
@@ -7897,13 +7978,22 @@ This will fail in production.`);
         try {
           uni.showLoading({ title: "保存中..." });
           const startTime = `${form.startDate} ${form.startTime}:00`;
+          const antiCheatConfig = {
+            shuffleQuestions: form.shuffleQuestions,
+            shuffleOptions: form.shuffleOptions,
+            leaveDetection: form.leaveDetection,
+            maxLeaveCount: parseInt(form.maxLeaveCount) || 3
+          };
           const examData = {
             id: examId.value || null,
             title: form.title,
             paperId: selectedPaperId.value,
             classIds: selectedClassId.value,
             duration: parseInt(form.duration),
-            startTime
+            startTime,
+            passScore: parseInt(form.passRate) || 60,
+            antiCheatConfig: JSON.stringify(antiCheatConfig),
+            allowViewAfterExam: form.allowViewAfterExam ? 1 : 0
           };
           let res;
           if (isEdit.value) {
@@ -7920,7 +8010,7 @@ This will fail in production.`);
             uni.showToast({ title: res.message || "保存失败", icon: "none" });
           }
         } catch (e) {
-          formatAppLog("error", "at pages/teacher/exam-edit.vue:171", "保存失败:", e);
+          formatAppLog("error", "at pages/teacher/exam-edit.vue:254", "保存失败:", e);
           uni.showToast({ title: "保存失败", icon: "none" });
         } finally {
           uni.hideLoading();
@@ -7933,7 +8023,7 @@ This will fail in production.`);
             papers.value = res.data.records || [];
           }
         } catch (e) {
-          formatAppLog("error", "at pages/teacher/exam-edit.vue:185", "加载试卷失败:", e);
+          formatAppLog("error", "at pages/teacher/exam-edit.vue:268", "加载试卷失败:", e);
         }
       };
       const loadClasses = async () => {
@@ -7945,7 +8035,7 @@ This will fail in production.`);
             classes.value = res.data.map((item) => item.class) || [];
           }
         } catch (e) {
-          formatAppLog("error", "at pages/teacher/exam-edit.vue:197", "加载班级失败:", e);
+          formatAppLog("error", "at pages/teacher/exam-edit.vue:280", "加载班级失败:", e);
         }
       };
       const loadExamInfo = async () => {
@@ -7962,9 +8052,34 @@ This will fail in production.`);
             selectedClassId.value = data.classId;
             selectedPaper.value = papers.value.find((p) => p.id === data.paperId);
             selectedClass.value = classes.value.find((c) => c.id === data.classId);
+            if (data.passScore) {
+              form.passRate = data.passScore.toString();
+            }
+            if (data.allowViewAfterExam !== void 0) {
+              form.allowViewAfterExam = data.allowViewAfterExam === 1;
+            }
+            if (data.antiCheatConfig) {
+              try {
+                const config = JSON.parse(data.antiCheatConfig);
+                if (config.shuffleQuestions !== void 0) {
+                  form.shuffleQuestions = config.shuffleQuestions;
+                }
+                if (config.shuffleOptions !== void 0) {
+                  form.shuffleOptions = config.shuffleOptions;
+                }
+                if (config.leaveDetection !== void 0) {
+                  form.leaveDetection = config.leaveDetection;
+                }
+                if (config.maxLeaveCount !== void 0) {
+                  form.maxLeaveCount = config.maxLeaveCount.toString();
+                }
+              } catch (e) {
+                formatAppLog("error", "at pages/teacher/exam-edit.vue:326", "解析防作弊配置失败:", e);
+              }
+            }
           }
         } catch (e) {
-          formatAppLog("error", "at pages/teacher/exam-edit.vue:220", "加载考试信息失败:", e);
+          formatAppLog("error", "at pages/teacher/exam-edit.vue:331", "加载考试信息失败:", e);
         }
       };
       onLoad((options) => {
@@ -8004,6 +8119,9 @@ This will fail in production.`);
             "scroll-y": ""
           }, [
             vue.createElementVNode("view", { class: "card" }, [
+              vue.createElementVNode("view", { class: "card-header" }, [
+                vue.createElementVNode("text", { class: "card-title" }, "基本信息")
+              ]),
               vue.createElementVNode("view", { class: "form-item" }, [
                 vue.createElementVNode("text", { class: "form-label" }, "考试标题 *"),
                 vue.withDirectives(vue.createElementVNode(
@@ -8110,6 +8228,92 @@ This will fail in production.`);
                     )
                   ])
                 ], 40, ["value"])
+              ])
+            ]),
+            vue.createElementVNode("view", { class: "card" }, [
+              vue.createElementVNode("view", { class: "card-header" }, [
+                vue.createElementVNode("text", { class: "card-title" }, "考试设置")
+              ]),
+              vue.createElementVNode("view", { class: "form-item" }, [
+                vue.createElementVNode("text", { class: "form-label" }, "及格比例 (%)"),
+                vue.withDirectives(vue.createElementVNode(
+                  "input",
+                  {
+                    class: "form-input",
+                    type: "number",
+                    "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => form.passRate = $event),
+                    placeholder: "默认60"
+                  },
+                  null,
+                  512
+                  /* NEED_PATCH */
+                ), [
+                  [vue.vModelText, form.passRate]
+                ])
+              ]),
+              vue.createElementVNode("view", { class: "form-item" }, [
+                vue.createElementVNode("text", { class: "form-label" }, "题目乱序"),
+                vue.createElementVNode("view", { class: "form-switch-wrap" }, [
+                  vue.createElementVNode("switch", {
+                    checked: form.shuffleQuestions,
+                    onChange: onShuffleQuestionsChange,
+                    color: "#dc2626"
+                  }, null, 40, ["checked"]),
+                  vue.createElementVNode("text", { class: "switch-desc" }, "开启后题目顺序随机排列")
+                ])
+              ]),
+              vue.createElementVNode("view", { class: "form-item" }, [
+                vue.createElementVNode("text", { class: "form-label" }, "选项乱序"),
+                vue.createElementVNode("view", { class: "form-switch-wrap" }, [
+                  vue.createElementVNode("switch", {
+                    checked: form.shuffleOptions,
+                    onChange: onShuffleOptionsChange,
+                    color: "#dc2626"
+                  }, null, 40, ["checked"]),
+                  vue.createElementVNode("text", { class: "switch-desc" }, "开启后选项顺序随机排列")
+                ])
+              ]),
+              vue.createElementVNode("view", { class: "form-item" }, [
+                vue.createElementVNode("text", { class: "form-label" }, "离开检测"),
+                vue.createElementVNode("view", { class: "form-switch-wrap" }, [
+                  vue.createElementVNode("switch", {
+                    checked: form.leaveDetection,
+                    onChange: onLeaveDetectionChange,
+                    color: "#dc2626"
+                  }, null, 40, ["checked"]),
+                  vue.createElementVNode("text", { class: "switch-desc" }, "检测考试期间离开页面")
+                ])
+              ]),
+              form.leaveDetection ? (vue.openBlock(), vue.createElementBlock("view", {
+                key: 0,
+                class: "form-item"
+              }, [
+                vue.createElementVNode("text", { class: "form-label" }, "离开次数上限"),
+                vue.withDirectives(vue.createElementVNode(
+                  "input",
+                  {
+                    class: "form-input",
+                    type: "number",
+                    "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => form.maxLeaveCount = $event),
+                    placeholder: "超过此次数将自动收卷"
+                  },
+                  null,
+                  512
+                  /* NEED_PATCH */
+                ), [
+                  [vue.vModelText, form.maxLeaveCount]
+                ])
+              ])) : vue.createCommentVNode("v-if", true),
+              vue.createElementVNode("view", { class: "form-item" }, [
+                vue.createElementVNode("text", { class: "form-label" }, "允许考后查看"),
+                vue.createElementVNode("view", { class: "form-switch-wrap" }, [
+                  vue.createElementVNode("switch", {
+                    checked: form.allowViewAfterExam,
+                    onChange: onAllowViewAfterExamChange,
+                    color: "#dc2626"
+                  }, null, 40, ["checked"]),
+                  vue.createElementVNode("text", { class: "switch-desc" }, "考试结束后可查看试卷和答案")
+                ])
               ])
             ])
           ]),
@@ -8748,12 +8952,13 @@ This will fail in production.`);
         return [];
       };
       const formatAnswer = (q) => {
-        if (!q.correctAnswer)
+        const answer = q.answer || q.correctAnswer;
+        if (!answer)
           return "";
         if (q.type === "JUDGMENT") {
-          return q.correctAnswer === "A" || q.correctAnswer === "正确" ? "正确" : "错误";
+          return answer === "A" || answer === "正确" ? "正确" : "错误";
         }
-        return q.correctAnswer;
+        return answer;
       };
       const currentQuestion = vue.computed(() => questions.value[currentIndex.value]);
       const singleQuestions = vue.computed(() => questions.value.filter((q) => q.type === "SINGLE_CHOICE"));
@@ -8785,7 +8990,7 @@ This will fail in production.`);
             Object.assign(paper, res.data);
           }
         } catch (e) {
-          formatAppLog("error", "at pages/teacher/paper-preview.vue:288", "加载试卷信息失败:", e);
+          formatAppLog("error", "at pages/teacher/paper-preview.vue:291", "加载试卷信息失败:", e);
         }
       };
       const loadQuestions = async () => {
@@ -8795,7 +9000,7 @@ This will fail in production.`);
             questions.value = res.data || [];
           }
         } catch (e) {
-          formatAppLog("error", "at pages/teacher/paper-preview.vue:299", "加载题目失败:", e);
+          formatAppLog("error", "at pages/teacher/paper-preview.vue:302", "加载题目失败:", e);
         }
       };
       const loadSubjects = async () => {
@@ -8805,7 +9010,7 @@ This will fail in production.`);
             subjects.value = res.data;
           }
         } catch (e) {
-          formatAppLog("error", "at pages/teacher/paper-preview.vue:310", "加载科目失败:", e);
+          formatAppLog("error", "at pages/teacher/paper-preview.vue:313", "加载科目失败:", e);
         }
       };
       onLoad((options) => {
@@ -9195,13 +9400,15 @@ This will fail in production.`);
                 ])) : vue.createCommentVNode("v-if", true)
               ]),
               vue.createElementVNode("view", { class: "card-legend" }, [
-                vue.createElementVNode("view", { class: "legend-item" }, [
-                  vue.createElementVNode("view", { class: "dot current" }),
-                  vue.createElementVNode("text", null, "当前")
-                ]),
-                vue.createElementVNode("view", { class: "legend-item" }, [
-                  vue.createElementVNode("view", { class: "dot unanswered" }),
-                  vue.createElementVNode("text", null, "未答")
+                vue.createElementVNode("view", { class: "legend-row" }, [
+                  vue.createElementVNode("view", { class: "legend-item" }, [
+                    vue.createElementVNode("view", { class: "dot current" }),
+                    vue.createElementVNode("text", null, "当前")
+                  ]),
+                  vue.createElementVNode("view", { class: "legend-item" }, [
+                    vue.createElementVNode("view", { class: "dot unanswered" }),
+                    vue.createElementVNode("text", null, "未答")
+                  ])
                 ])
               ])
             ])
@@ -9957,7 +10164,7 @@ This will fail in production.`);
       vue.ref([]);
       const questions = vue.ref([]);
       const studentAnswers = vue.ref({});
-      const grades = vue.ref({});
+      const grades = vue.reactive({});
       const goBack = () => {
         uni.navigateBack();
       };
@@ -10002,12 +10209,13 @@ This will fail in production.`);
         return [];
       };
       const formatAnswer = (q) => {
-        if (!q.correctAnswer)
+        const answer = q.answer || q.correctAnswer;
+        if (!answer)
           return "";
         if (q.type === "JUDGMENT") {
-          return q.correctAnswer === "A" || q.correctAnswer === "正确" ? "正确" : "错误";
+          return answer === "A" || answer === "正确" ? "正确" : "错误";
         }
-        return q.correctAnswer;
+        return answer;
       };
       const getStudentAnswer = (q) => {
         return studentAnswers.value[q.id];
@@ -10060,27 +10268,40 @@ This will fail in production.`);
               try {
                 studentAnswers.value = typeof data.answers === "string" ? JSON.parse(data.answers) : data.answers;
               } catch (e) {
-                formatAppLog("error", "at pages/teacher/exam-grade.vue:210", "解析答案失败:", e);
+                formatAppLog("error", "at pages/teacher/exam-grade.vue:211", "解析答案失败:", e);
               }
             }
-          }
-          const examRes = await examApi.getById(examId.value);
-          if (examRes.code === 200) {
-            Object.assign(examInfo, examRes.data);
-            if (examRes.data.paperId) {
-              const qRes = await paperApi.getQuestions(examRes.data.paperId);
-              if (qRes.code === 200) {
-                questions.value = qRes.data || [];
+            if (data.exam) {
+              Object.assign(examInfo, data.exam);
+              if (data.questions) {
+                questions.value = data.questions || [];
                 questions.value.forEach((q) => {
                   if (isSubjective(q.type)) {
-                    grades.value[q.id] = "";
+                    grades[q.id] = "";
                   }
                 });
               }
             }
           }
+          if (!examInfo.title) {
+            const examRes = await examApi.getById(examId.value);
+            if (examRes.code === 200) {
+              Object.assign(examInfo, examRes.data);
+              if (examRes.data.paperId && questions.value.length === 0) {
+                const qRes = await paperApi.getQuestions(examRes.data.paperId);
+                if (qRes.code === 200) {
+                  questions.value = qRes.data || [];
+                  questions.value.forEach((q) => {
+                    if (isSubjective(q.type)) {
+                      grades[q.id] = "";
+                    }
+                  });
+                }
+              }
+            }
+          }
         } catch (e) {
-          formatAppLog("error", "at pages/teacher/exam-grade.vue:232", "加载失败:", e);
+          formatAppLog("error", "at pages/teacher/exam-grade.vue:248", "加载失败:", e);
           uni.showToast({ title: "加载失败", icon: "none" });
         } finally {
           uni.hideLoading();
@@ -10092,8 +10313,8 @@ This will fail in production.`);
           const gradeData = {};
           let hasGrade = false;
           questions.value.forEach((q) => {
-            if (isSubjective(q.type) && grades.value[q.id] !== "") {
-              const score = parseInt(grades.value[q.id]);
+            if (isSubjective(q.type) && grades[q.id] !== "") {
+              const score = parseInt(grades[q.id]);
               if (!isNaN(score) && score >= 0 && score <= q.score) {
                 gradeData[q.id] = score;
                 hasGrade = true;
@@ -10114,7 +10335,7 @@ This will fail in production.`);
             uni.showToast({ title: res.message || "评分失败", icon: "none" });
           }
         } catch (e) {
-          formatAppLog("error", "at pages/teacher/exam-grade.vue:271", "评分失败:", e);
+          formatAppLog("error", "at pages/teacher/exam-grade.vue:287", "评分失败:", e);
           uni.showToast({ title: "评分失败", icon: "none" });
         } finally {
           uni.hideLoading();
@@ -10294,11 +10515,11 @@ This will fail in production.`);
                         vue.withDirectives(vue.createElementVNode("input", {
                           class: "grade-input",
                           type: "number",
-                          "onUpdate:modelValue": ($event) => grades.value[q.id] = $event,
+                          "onUpdate:modelValue": ($event) => grades[q.id] = $event,
                           max: q.score,
                           placeholder: "0"
                         }, null, 8, ["onUpdate:modelValue", "max"]), [
-                          [vue.vModelText, grades.value[q.id]]
+                          [vue.vModelText, grades[q.id]]
                         ]),
                         vue.createElementVNode("text", { class: "grade-unit" }, "分")
                       ])
@@ -11316,7 +11537,6 @@ This will fail in production.`);
   const _sfc_main$4 = {
     __name: "exam-take",
     setup(__props) {
-      useUserStore();
       const examInfo = vue.ref(null);
       const questions = vue.ref([]);
       const recordId = vue.ref(null);
@@ -11328,13 +11548,14 @@ This will fail in production.`);
       const remainingTime = vue.ref(0);
       const leaveCount = vue.ref(0);
       const maxLeaveCount = vue.ref(3);
-      const leaveDetectionEnabled = vue.ref(false);
       const isViewMode = vue.ref(false);
+      vue.ref(false);
       const answerMap = vue.ref({});
       const canViewPaper = vue.ref(false);
       const studentScore = vue.ref(0);
-      const hasSubjectiveUngraded = vue.ref(false);
       const showNav = vue.ref(false);
+      const examStartTime = vue.ref(0);
+      const examDuration = vue.ref(0);
       let timer = null;
       let autoSaveTimer = null;
       const typeMap = {
@@ -11380,15 +11601,23 @@ This will fail in production.`);
           return "";
         return ((_a = typeMap[currentQuestion.value.type]) == null ? void 0 : _a.name) || currentQuestion.value.type;
       });
+      const getExamConfig = () => {
+        var _a, _b;
+        try {
+          const configStr = ((_a = examInfo.value) == null ? void 0 : _a.antiCheatConfig) || ((_b = examInfo.value) == null ? void 0 : _b.config) || "{}";
+          return typeof configStr === "string" ? JSON.parse(configStr) : configStr;
+        } catch (e) {
+          return {};
+        }
+      };
       const currentShuffledOptions = vue.computed(() => {
-        var _a;
         if (!currentQuestion.value || !currentQuestion.value.options)
           return [];
         const questionId = currentQuestion.value.id;
         if (!shuffledOptionsMap[questionId]) {
           const original = parseOptions(currentQuestion.value.options);
           let options = Object.entries(original).map(([key, label]) => ({ key, label }));
-          const examConfig = ((_a = examInfo.value) == null ? void 0 : _a.config) || {};
+          const examConfig = getExamConfig();
           if (examConfig.shuffleOptions && !isViewMode.value) {
             options = shuffleArray([...options]);
           }
@@ -11430,16 +11659,12 @@ This will fail in production.`);
           return null;
         return answerMap.value[key].isCorrect === 1;
       };
-      const getQuestionCorrectAnswer = (questionId) => {
-        if (!answerMap.value)
-          return "";
-        const key = String(questionId);
-        if (!answerMap.value[key])
-          return "";
-        return answerMap.value[key].correctAnswer || "";
-      };
-      const isSingleChoiceOrJudgment = (type) => {
-        return type === "SINGLE_CHOICE" || type === "JUDGMENT";
+      const isCorrectAnswer = (questionId, key) => {
+        const question = questions.value.find((q) => q.id === questionId);
+        if (!question || !question.correctAnswer)
+          return false;
+        const correctKeys = question.correctAnswer.split(",").map((k) => k.trim());
+        return correctKeys.indexOf(key) > -1;
       };
       const isMultiSelected = (questionId, key) => {
         const answer = multiAnswers[questionId];
@@ -11447,19 +11672,19 @@ This will fail in production.`);
           return false;
         return answer.indexOf(key) > -1;
       };
-      const isCorrectAnswer = (questionId, key) => {
-        const correctAnswer = getQuestionCorrectAnswer(questionId);
-        if (!correctAnswer)
-          return false;
-        const correctKeys = correctAnswer.split(",");
-        return correctKeys.indexOf(key) > -1;
+      const isSingleChoiceOrJudgment = (type) => {
+        return type === "SINGLE_CHOICE" || type === "JUDGMENT";
       };
       const isCurrentQuestion = (questionId) => {
         return currentQuestionId.value === questionId;
       };
       const formatTime = (seconds) => {
-        const m = Math.floor(seconds / 60);
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor(seconds % 3600 / 60);
         const s = seconds % 60;
+        if (h > 0) {
+          return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+        }
         return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
       };
       const parseOptions = (options) => {
@@ -11504,13 +11729,29 @@ This will fail in production.`);
         }
         return {};
       };
-      const shuffleArray = (array) => {
+      const seededRandom = (seed) => {
+        const x = Math.sin(seed++) * 1e4;
+        return x - Math.floor(x);
+      };
+      const shuffleArray = (array, seed = Date.now()) => {
         const shuffled = [...array];
+        let random = seededRandom.bind(null, seed);
         for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
+          const j = Math.floor(random() * (i + 1));
           [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
         return shuffled;
+      };
+      const shuffleQuestionsByType = (questions2) => {
+        const typeOrder = ["SINGLE_CHOICE", "MULTIPLE_CHOICE", "JUDGMENT", "FILL_BLANK", "ESSAY", "PROGRAMMING"];
+        const result = [];
+        for (const type of typeOrder) {
+          const typeQuestions = questions2.filter((q) => q.type === type);
+          if (typeQuestions.length > 0) {
+            result.push(...shuffleArray(typeQuestions));
+          }
+        }
+        return result;
       };
       const jumpToQuestion = (questionId) => {
         currentQuestionId.value = questionId;
@@ -11550,24 +11791,38 @@ This will fail in production.`);
         saveAnswer();
       };
       const saveAnswer = async () => {
-        if (!recordId.value)
+        if (isViewMode.value)
           return;
+        if (!recordId.value) {
+          formatAppLog("error", "at pages/student/exam-take.vue:450", "保存答案失败: recordId为空");
+          return;
+        }
         try {
-          const allAnswers = { ...answers };
-          for (const [qId, value] of Object.entries(multiAnswers)) {
-            if (Array.isArray(value) && value.length > 0) {
-              allAnswers[qId] = value.join(",");
+          const allAnswers = {};
+          for (const [qId, value] of Object.entries(answers)) {
+            if (value && value.trim() !== "") {
+              allAnswers[String(qId)] = String(value);
             }
           }
-          await examRecordApi.autoSave({
-            recordId: recordId.value,
+          for (const [qId, value] of Object.entries(multiAnswers)) {
+            if (Array.isArray(value) && value.length > 0) {
+              allAnswers[String(qId)] = value.join(",");
+            }
+          }
+          if (Object.keys(allAnswers).length === 0)
+            return;
+          const saveResult = await examRecordApi.autoSave({
+            recordId: Number(recordId.value),
             answers: allAnswers
           });
+          formatAppLog("log", "at pages/student/exam-take.vue:470", "保存答案结果:", saveResult);
         } catch (e) {
-          formatAppLog("error", "at pages/student/exam-take.vue:452", e);
+          formatAppLog("error", "at pages/student/exam-take.vue:472", "保存答案失败:", e);
         }
       };
       const handleManualSave = async () => {
+        if (isViewMode.value)
+          return;
         saving.value = true;
         try {
           await saveAnswer();
@@ -11579,24 +11834,22 @@ This will fail in production.`);
         }
       };
       const handleSubmit = async () => {
+        if (isViewMode.value)
+          return;
         uni.showModal({
           title: "提示",
           content: "确定要交卷吗？交卷后无法修改答案",
           success: async (res) => {
-            var _a;
             if (res.confirm) {
               submitting.value = true;
               try {
                 const result = await examRecordApi.submit(recordId.value);
                 if (result.code === 200) {
-                  const examId = (_a = currentQuestion.value) == null ? void 0 : _a.examId;
-                  uni.removeStorageSync(`exam_end_time_${examId}`);
                   uni.showToast({ title: "交卷成功", icon: "success" });
                   isViewMode.value = true;
-                  leaveDetectionEnabled.value = false;
                   setTimeout(() => {
                     uni.redirectTo({ url: "/pages/student/history" });
-                  }, 1e3);
+                  }, 1500);
                 } else {
                   uni.showToast({ title: result.message || "交卷失败", icon: "none" });
                 }
@@ -11615,116 +11868,78 @@ This will fail in production.`);
         uni.showToast({ title: "考试时间到，已自动交卷", icon: "none", duration: 2e3 });
         try {
           await examRecordApi.autoSubmit(recordId.value);
-          uni.redirectTo({ url: "/pages/student/history" });
         } catch (e) {
-          uni.redirectTo({ url: "/pages/student/history" });
+          formatAppLog("error", "at pages/student/exam-take.vue:524", e);
         }
+        setTimeout(() => {
+          uni.redirectTo({ url: "/pages/student/history" });
+        }, 2e3);
       };
-      onLoad((options) => {
-        const examId = options.id;
-        const recordId2 = options.recordId;
-        const isReview = options.review === "1";
-        if (examId) {
-          loadExamData(examId, recordId2, isReview);
-        }
-      });
-      const loadExamData = async (examId, reviewRecordId, isReview) => {
-        var _a, _b;
-        try {
-          if (isReview && reviewRecordId) {
-            isViewMode.value = true;
-            canViewPaper.value = true;
-            const res = await examRecordApi.getById(reviewRecordId);
-            if (res.code === 200) {
-              examInfo.value = res.data.exam;
-              questions.value = res.data.questions || [];
-              recordId.value = res.data.id;
-              answerMap.value = res.data.answerMap || {};
-              studentScore.value = res.data.score || 0;
-              if (res.data.answers) {
-                Object.assign(answers, res.data.answers);
-              }
-              if (questions.value.length > 0) {
-                currentQuestionId.value = questions.value[0].id;
-              }
-            } else {
-              uni.showToast({ title: res.message || "加载失败", icon: "none" });
-            }
-          } else {
-            const res = await examRecordApi.start({ examId: Number(examId) });
-            if (res.code === 200) {
-              examInfo.value = res.data.exam;
-              questions.value = res.data.questions;
-              recordId.value = res.data.recordId;
-              canViewPaper.value = res.data.canViewPaper || false;
-              answerMap.value = res.data.answerMap || {};
-              studentScore.value = res.data.studentScore || 0;
-              hasSubjectiveUngraded.value = res.data.hasSubjectiveUngraded || false;
-              if (res.data.studentAnswers) {
-                Object.assign(answers, res.data.studentAnswers);
-              }
-              const examConfig = ((_a = examInfo.value) == null ? void 0 : _a.config) || {};
-              if (examConfig.shuffleQuestions && !isViewMode.value) {
-                questions.value = shuffleArray([...questions.value]);
-              }
-              if (questions.value.length > 0) {
-                currentQuestionId.value = questions.value[0].id;
-              }
-              const isExamFinished = ((_b = examInfo.value) == null ? void 0 : _b.status) === "FINISHED";
-              isViewMode.value = isExamFinished || canViewPaper.value;
-              if (!isViewMode.value && res.data.duration) {
-                remainingTime.value = res.data.duration * 60;
-                startTimer();
-                setupLeaveDetection();
-                setupAutoSave();
-              }
-            } else {
-              uni.showToast({ title: res.message || "加载失败", icon: "none" });
-            }
-          }
-        } catch (e) {
-          formatAppLog("error", "at pages/student/exam-take.vue:581", e);
-          uni.showToast({ title: "网络错误", icon: "none" });
-        }
+      const recalculateRemainingTime = () => {
+        if (!examStartTime.value || isViewMode.value)
+          return;
+        const totalSeconds = examDuration.value * 60;
+        const elapsedSeconds = Math.floor((Date.now() - examStartTime.value) / 1e3);
+        remainingTime.value = Math.max(0, totalSeconds - elapsedSeconds);
       };
       const startTimer = () => {
+        if (timer)
+          clearInterval(timer);
         timer = setInterval(() => {
-          if (remainingTime.value > 0) {
-            remainingTime.value--;
-          } else {
+          recalculateRemainingTime();
+          if (remainingTime.value <= 0) {
             clearInterval(timer);
             handleTimeUp();
           }
         }, 1e3);
       };
-      const setupLeaveDetection = () => {
-        leaveDetectionEnabled.value = true;
-        uni.onAppHide(() => {
-          handleLeaveDetection();
-        });
+      const setupAutoSave = () => {
+        if (autoSaveTimer)
+          clearInterval(autoSaveTimer);
+        autoSaveTimer = setInterval(() => {
+          saveAnswer();
+        }, 3e4);
       };
       const handleLeaveDetection = async () => {
-        var _a;
-        if (!leaveDetectionEnabled.value || !recordId.value || ((_a = examInfo.value) == null ? void 0 : _a.status) !== "ONGOING")
+        if (!recordId.value || isViewMode.value)
+          return;
+        const examConfig = getExamConfig();
+        if (!examConfig.leaveDetection)
           return;
         leaveCount.value++;
+        formatAppLog("log", "at pages/student/exam-take.vue:563", "检测到离开，当前离开次数:", leaveCount.value);
+        if (examConfig.maxLeaveCount !== void 0) {
+          maxLeaveCount.value = examConfig.maxLeaveCount;
+        }
+        uni.setStorageSync(`leaveWarning_${recordId.value}`, {
+          needShow: true,
+          leaveCount: leaveCount.value,
+          maxLeaveCount: maxLeaveCount.value
+        });
         if (leaveCount.value >= maxLeaveCount.value) {
-          uni.showToast({ title: "离开次数过多，已自动交卷", icon: "none", duration: 2e3 });
-          try {
-            await examRecordApi.autoSubmit(recordId.value);
-            uni.redirectTo({ url: "/pages/student/history" });
-          } catch (e) {
-            uni.redirectTo({ url: "/pages/student/history" });
-          }
+          uni.showModal({
+            title: "警告",
+            content: `您已离开考试页面${leaveCount.value}次，已达到上限！
+系统将自动交卷。`,
+            showCancel: false,
+            confirmText: "确定",
+            success: async () => {
+              try {
+                await examRecordApi.autoSubmit(recordId.value);
+              } catch (e) {
+                formatAppLog("error", "at pages/student/exam-take.vue:585", e);
+              }
+              uni.redirectTo({ url: "/pages/student/history" });
+            }
+          });
           return;
         }
         uni.showModal({
           title: "警告",
-          content: `您已离开考试页面！
-离开次数：${leaveCount.value} / ${maxLeaveCount.value}
-剩余 ${maxLeaveCount.value - leaveCount.value} 次机会，超出将自动交卷`,
+          content: `您已离开考试页面${leaveCount.value}次！
+再离开${maxLeaveCount.value - leaveCount.value}次将被强制收卷。`,
           showCancel: false,
-          confirmText: "继续作答"
+          confirmText: "知道了"
         });
         try {
           await examRecordApi.reportLeave({
@@ -11732,14 +11947,180 @@ This will fail in production.`);
             leaveCount: leaveCount.value
           });
         } catch (e) {
-          formatAppLog("error", "at pages/student/exam-take.vue:633", e);
+          formatAppLog("error", "at pages/student/exam-take.vue:606", "上报离开失败:", e);
         }
       };
-      const setupAutoSave = () => {
-        autoSaveTimer = setInterval(() => {
-          saveAnswer();
-        }, 3e4);
+      const loadExamData = async (examId, reviewRecordId, isReview) => {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r;
+        try {
+          if (isReview && reviewRecordId) {
+            isViewMode.value = true;
+            const res = await examRecordApi.getById(reviewRecordId);
+            if (res.code === 200) {
+              examInfo.value = res.data.exam;
+              questions.value = res.data.questions || [];
+              recordId.value = res.data.id;
+              answerMap.value = res.data.answerMap || {};
+              studentScore.value = res.data.score || 0;
+              try {
+                const examConfig = typeof ((_a = res.data.exam) == null ? void 0 : _a.antiCheatConfig) === "string" ? JSON.parse((_b = res.data.exam) == null ? void 0 : _b.antiCheatConfig) : ((_c = res.data.exam) == null ? void 0 : _c.antiCheatConfig) || {};
+                canViewPaper.value = ((_d = res.data.exam) == null ? void 0 : _d.allowViewAfterExam) !== 0 && examConfig.viewPaperAfterExam !== false;
+              } catch (e) {
+                canViewPaper.value = ((_e = res.data.exam) == null ? void 0 : _e.allowViewAfterExam) !== 0;
+              }
+              if (res.data.studentAnswers) {
+                Object.assign(answers, typeof res.data.studentAnswers === "string" ? JSON.parse(res.data.studentAnswers) : res.data.studentAnswers);
+              }
+              if (questions.value.length > 0) {
+                currentQuestionId.value = questions.value[0].id;
+              }
+            } else {
+              uni.showToast({ title: res.message || "加载失败", icon: "none" });
+            }
+          } else {
+            const examRes = await examApi.getById(examId);
+            if (examRes.code === 200) {
+              examInfo.value = examRes.data;
+              const isExamFinished = examInfo.value.status === "FINISHED";
+              if (isExamFinished) {
+                isViewMode.value = true;
+                const recRes = await examRecordApi.page({ examId: Number(examId) });
+                if (recRes.code === 200 && recRes.data.records.length > 0) {
+                  const record = recRes.data.records[0];
+                  recordId.value = record.id;
+                  studentScore.value = record.score || 0;
+                  answerMap.value = record.answerMap || {};
+                  try {
+                    const examConfig = typeof ((_f = examInfo.value) == null ? void 0 : _f.antiCheatConfig) === "string" ? JSON.parse((_g = examInfo.value) == null ? void 0 : _g.antiCheatConfig) : ((_h = examInfo.value) == null ? void 0 : _h.antiCheatConfig) || {};
+                    canViewPaper.value = ((_i = examInfo.value) == null ? void 0 : _i.allowViewAfterExam) !== 0 && examConfig.viewPaperAfterExam !== false;
+                  } catch (e) {
+                    canViewPaper.value = ((_j = examInfo.value) == null ? void 0 : _j.allowViewAfterExam) !== 0;
+                  }
+                  if (record.studentAnswers || record.answers) {
+                    Object.assign(answers, typeof (record.studentAnswers || record.answers) === "string" ? JSON.parse(record.studentAnswers || record.answers) : record.studentAnswers || record.answers);
+                  }
+                }
+              }
+              let existingRecord = null;
+              if (examInfo.value.paperId) {
+                const qRes = await examRecordApi.page({ examId: Number(examId) });
+                if (qRes.code === 200 && qRes.data.records.length > 0) {
+                  existingRecord = qRes.data.records.find((r) => r.status === "ONGOING");
+                }
+              }
+              const startRes = await examRecordApi.start({ examId: Number(examId) });
+              formatAppLog("log", "at pages/student/exam-take.vue:676", "start接口返回:", JSON.stringify(startRes));
+              if (startRes.code === 200) {
+                formatAppLog("log", "at pages/student/exam-take.vue:678", "questions原始数据长度:", (startRes.data.questions || []).length);
+                questions.value = startRes.data.questions || [];
+                formatAppLog("log", "at pages/student/exam-take.vue:680", "questions设置后长度:", questions.value.length);
+                if (!recordId.value) {
+                  recordId.value = startRes.data.recordId;
+                }
+                const recordStatus = (_k = startRes.data.record) == null ? void 0 : _k.status;
+                formatAppLog("log", "at pages/student/exam-take.vue:687", "record状态:", recordStatus);
+                if (recordStatus === "SUBMITTED" || recordStatus === "AUTO_SUBMITTED") {
+                  isViewMode.value = true;
+                  studentScore.value = ((_l = startRes.data.record) == null ? void 0 : _l.score) || 0;
+                }
+                try {
+                  const examConfig2 = typeof ((_m = examInfo.value) == null ? void 0 : _m.antiCheatConfig) === "string" ? JSON.parse((_n = examInfo.value) == null ? void 0 : _n.antiCheatConfig) : ((_o = examInfo.value) == null ? void 0 : _o.antiCheatConfig) || {};
+                  canViewPaper.value = ((_p = examInfo.value) == null ? void 0 : _p.allowViewAfterExam) !== 0 && examConfig2.viewPaperAfterExam !== false;
+                } catch (e) {
+                  canViewPaper.value = ((_q = examInfo.value) == null ? void 0 : _q.allowViewAfterExam) !== 0;
+                }
+                answerMap.value = startRes.data.answerMap || {};
+                if (startRes.data.studentAnswers) {
+                  formatAppLog("log", "at pages/student/exam-take.vue:703", "恢复已保存答案:", startRes.data.studentAnswers);
+                  Object.assign(answers, typeof startRes.data.studentAnswers === "string" ? JSON.parse(startRes.data.studentAnswers) : startRes.data.studentAnswers);
+                }
+                formatAppLog("log", "at pages/student/exam-take.vue:706", "恢复后answers:", answers);
+                if (startRes.data.leaveCount !== void 0) {
+                  leaveCount.value = startRes.data.leaveCount;
+                }
+                const examConfig = getExamConfig();
+                if (examConfig.shuffleQuestions && !isViewMode.value) {
+                  questions.value = shuffleQuestionsByType(questions.value);
+                }
+                if (questions.value.length > 0) {
+                  currentQuestionId.value = questions.value[0].id;
+                }
+                if (!isViewMode.value) {
+                  examDuration.value = examInfo.value.duration || 0;
+                  if (!examStartTime.value) {
+                    if (startRes.data.startTime) {
+                      formatAppLog("log", "at pages/student/exam-take.vue:726", "使用后端返回的startTime:", startRes.data.startTime);
+                      examStartTime.value = new Date(startRes.data.startTime).getTime();
+                    } else if (((_r = startRes.data.record) == null ? void 0 : _r.submitTime) && examDuration.value > 0) {
+                      formatAppLog("log", "at pages/student/exam-take.vue:729", "startTime为空，使用submitTime倒推");
+                      examStartTime.value = new Date(startRes.data.record.submitTime).getTime() - examDuration.value * 60 * 1e3;
+                    } else {
+                      formatAppLog("log", "at pages/student/exam-take.vue:732", "使用当前时间作为startTime");
+                      examStartTime.value = Date.now();
+                    }
+                  }
+                  formatAppLog("log", "at pages/student/exam-take.vue:736", "examStartTime:", examStartTime.value, ", examDuration:", examDuration.value);
+                  recalculateRemainingTime();
+                  formatAppLog("log", "at pages/student/exam-take.vue:739", "剩余时间:", remainingTime.value);
+                  startTimer();
+                  setupAutoSave();
+                }
+              }
+            } else {
+              uni.showToast({ title: examRes.message || "加载失败", icon: "none" });
+            }
+          }
+        } catch (e) {
+          formatAppLog("error", "at pages/student/exam-take.vue:749", "加载失败:", e);
+          uni.showToast({ title: "网络错误", icon: "none" });
+        }
       };
+      onLoad((options) => {
+        const examId = options.id;
+        const reviewRecordId = options.recordId;
+        const isReview = options.review === "1";
+        if (examId) {
+          loadExamData(examId, reviewRecordId, isReview);
+        }
+      });
+      onShow(() => {
+        formatAppLog("log", "at pages/student/exam-take.vue:764", "onShow触发");
+        if (!isViewMode.value && examStartTime.value) {
+          recalculateRemainingTime();
+        }
+        const warningData = uni.getStorageSync(`leaveWarning_${recordId.value}`);
+        if (warningData && warningData.needShow) {
+          formatAppLog("log", "at pages/student/exam-take.vue:771", "显示离开警告弹窗");
+          uni.removeStorageSync(`leaveWarning_${recordId.value}`);
+          uni.showModal({
+            title: "警告",
+            content: `您已离开考试页面！
+离开次数：${warningData.leaveCount} / ${warningData.maxLeaveCount}
+剩余 ${warningData.maxLeaveCount - warningData.leaveCount} 次机会，超出将自动交卷`,
+            showCancel: false,
+            confirmText: "继续作答"
+          });
+        }
+      });
+      onHide(() => {
+        formatAppLog("log", "at pages/student/exam-take.vue:783", "onHide触发");
+        handleLeaveDetection();
+      });
+      vue.onMounted(() => {
+        uni.onAppHide(() => {
+          formatAppLog("log", "at pages/student/exam-take.vue:789", "AppHide触发");
+          handleLeaveDetection();
+        });
+        uni.onAppShow(() => {
+          if (!isViewMode.value && examStartTime.value) {
+            recalculateRemainingTime();
+          }
+        });
+      });
+      onUnload(() => {
+        formatAppLog("log", "at pages/student/exam-take.vue:801", "onUnload触发");
+        handleLeaveDetection();
+      });
       vue.onUnmounted(() => {
         if (timer) {
           clearInterval(timer);
@@ -11747,10 +12128,10 @@ This will fail in production.`);
         if (autoSaveTimer) {
           clearInterval(autoSaveTimer);
         }
+        uni.offAppHide();
+        uni.offAppShow();
       });
       return (_ctx, _cache) => {
-        var _a, _b;
-        const _component_uni_icons = vue.resolveComponent("uni-icons");
         return examInfo.value ? (vue.openBlock(), vue.createElementBlock("view", {
           key: 0,
           class: "exam-container"
@@ -11821,11 +12202,7 @@ This will fail in production.`);
                     class: vue.normalizeClass(["timer", { warning: remainingTime.value < 300 }])
                   },
                   [
-                    vue.createVNode(_component_uni_icons, {
-                      type: "clock",
-                      size: "16",
-                      color: "#fff"
-                    }),
+                    vue.createElementVNode("text", null, "⏱"),
                     vue.createElementVNode(
                       "text",
                       null,
@@ -11850,23 +12227,17 @@ This will fail in production.`);
               ]))
             ])
           ]),
-          !(isViewMode.value && (!canViewPaper.value || hasSubjectiveUngraded.value)) ? (vue.openBlock(), vue.createElementBlock("view", {
+          !(isViewMode.value && !canViewPaper.value) ? (vue.openBlock(), vue.createElementBlock("view", {
             key: 0,
             class: "exam-body"
           }, [
-            vue.createCommentVNode(" 题目导航按钮 "),
             vue.createElementVNode("view", {
               class: "nav-toggle",
               onClick: _cache[0] || (_cache[0] = ($event) => showNav.value = true)
             }, [
-              vue.createVNode(_component_uni_icons, {
-                type: "list",
-                size: "20",
-                color: "#fff"
-              }),
+              vue.createElementVNode("text", null, "📋"),
               vue.createElementVNode("text", null, "答题卡")
             ]),
-            vue.createCommentVNode(" 当前题目 "),
             vue.unref(currentQuestion) ? (vue.openBlock(), vue.createElementBlock("view", {
               key: 0,
               class: "question-card"
@@ -11905,8 +12276,7 @@ This will fail in production.`);
                 1
                 /* TEXT */
               ),
-              vue.createCommentVNode(" 选择题选项 "),
-              isSingleChoiceOrJudgment(vue.unref(currentQuestion).type) && !((_a = vue.unref(currentQuestion).correctAnswer) == null ? void 0 : _a.includes(",")) ? (vue.openBlock(), vue.createElementBlock("view", {
+              isSingleChoiceOrJudgment(vue.unref(currentQuestion).type) ? (vue.openBlock(), vue.createElementBlock("view", {
                 key: 0,
                 class: "question-options"
               }, [
@@ -11918,8 +12288,8 @@ This will fail in production.`);
                       key: item.key,
                       class: vue.normalizeClass(["option-item", {
                         selected: answers[vue.unref(currentQuestion).id] === item.key,
-                        correct: isViewMode.value && canViewPaper.value && item.key === getQuestionCorrectAnswer(vue.unref(currentQuestion).id),
-                        wrong: isViewMode.value && canViewPaper.value && answers[vue.unref(currentQuestion).id] === item.key && item.key !== getQuestionCorrectAnswer(vue.unref(currentQuestion).id)
+                        correct: isViewMode.value && canViewPaper.value && isCorrectAnswer(vue.unref(currentQuestion).id, item.key),
+                        wrong: isViewMode.value && canViewPaper.value && answers[vue.unref(currentQuestion).id] === item.key && !isCorrectAnswer(vue.unref(currentQuestion).id, item.key)
                       }]),
                       onClick: ($event) => handleSelect(item.key)
                     }, [
@@ -11942,98 +12312,84 @@ This will fail in production.`);
                   128
                   /* KEYED_FRAGMENT */
                 ))
-              ])) : vue.unref(currentQuestion).type === "MULTIPLE_CHOICE" || ((_b = vue.unref(currentQuestion).correctAnswer) == null ? void 0 : _b.includes(",")) ? (vue.openBlock(), vue.createElementBlock(
-                vue.Fragment,
-                { key: 1 },
-                [
-                  vue.createCommentVNode(" 多选题 "),
-                  vue.createElementVNode("view", { class: "question-options" }, [
-                    (vue.openBlock(true), vue.createElementBlock(
-                      vue.Fragment,
-                      null,
-                      vue.renderList(vue.unref(currentShuffledOptions), (item, index) => {
-                        return vue.openBlock(), vue.createElementBlock("view", {
-                          key: item.key,
-                          class: vue.normalizeClass(["option-item", {
-                            selected: isMultiSelected(vue.unref(currentQuestion).id, item.key),
-                            correct: isViewMode.value && canViewPaper.value && isCorrectAnswer(vue.unref(currentQuestion).id, item.key),
-                            wrong: isViewMode.value && canViewPaper.value && isMultiSelected(vue.unref(currentQuestion).id, item.key) && !isCorrectAnswer(vue.unref(currentQuestion).id, item.key)
-                          }]),
-                          onClick: ($event) => handleMultiSelect(item.key)
-                        }, [
-                          vue.createElementVNode(
-                            "view",
-                            { class: "option-key" },
-                            vue.toDisplayString(item.key),
-                            1
-                            /* TEXT */
-                          ),
-                          vue.createElementVNode(
-                            "text",
-                            { class: "option-text" },
-                            vue.toDisplayString(item.label),
-                            1
-                            /* TEXT */
-                          )
-                        ], 10, ["onClick"]);
-                      }),
-                      128
-                      /* KEYED_FRAGMENT */
-                    ))
-                  ])
-                ],
-                2112
-                /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */
-              )) : (vue.openBlock(), vue.createElementBlock(
-                vue.Fragment,
-                { key: 2 },
-                [
-                  vue.createCommentVNode(" 填空题和简答题 "),
-                  vue.createElementVNode("view", { class: "question-input" }, [
-                    vue.withDirectives(vue.createElementVNode("textarea", {
-                      "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => answers[vue.unref(currentQuestion).id] = $event),
-                      placeholder: vue.unref(currentQuestion).type === "FILL_BLANK" ? "请输入答案" : "请输入答案内容",
-                      maxlength: vue.unref(currentQuestion).type === "FILL_BLANK" ? 500 : 2e3,
-                      disabled: isViewMode.value,
-                      onBlur: saveAnswer
-                    }, null, 40, ["placeholder", "maxlength", "disabled"]), [
-                      [vue.vModelText, answers[vue.unref(currentQuestion).id]]
-                    ]),
-                    vue.createCommentVNode(" 查看模式显示答案对比 "),
-                    isViewMode.value && canViewPaper.value ? (vue.openBlock(), vue.createElementBlock("view", {
-                      key: 0,
-                      class: "answer-comparison"
+              ])) : vue.unref(currentQuestion).type === "MULTIPLE_CHOICE" ? (vue.openBlock(), vue.createElementBlock("view", {
+                key: 1,
+                class: "question-options"
+              }, [
+                (vue.openBlock(true), vue.createElementBlock(
+                  vue.Fragment,
+                  null,
+                  vue.renderList(vue.unref(currentShuffledOptions), (item, index) => {
+                    return vue.openBlock(), vue.createElementBlock("view", {
+                      key: item.key,
+                      class: vue.normalizeClass(["option-item", {
+                        selected: isMultiSelected(vue.unref(currentQuestion).id, item.key),
+                        correct: isViewMode.value && canViewPaper.value && isCorrectAnswer(vue.unref(currentQuestion).id, item.key),
+                        wrong: isViewMode.value && canViewPaper.value && isMultiSelected(vue.unref(currentQuestion).id, item.key) && !isCorrectAnswer(vue.unref(currentQuestion).id, item.key)
+                      }]),
+                      onClick: ($event) => handleMultiSelect(item.key)
                     }, [
-                      vue.createElementVNode("view", { class: "answer-row" }, [
-                        vue.createElementVNode("text", { class: "label" }, "你的答案："),
-                        vue.createElementVNode(
-                          "text",
-                          { class: "value" },
-                          vue.toDisplayString(answers[vue.unref(currentQuestion).id] || "未答"),
-                          1
-                          /* TEXT */
-                        )
-                      ]),
-                      vue.unref(currentQuestion).type === "FILL_BLANK" ? (vue.openBlock(), vue.createElementBlock("view", {
-                        key: 0,
-                        class: "answer-row"
-                      }, [
-                        vue.createElementVNode("text", { class: "label" }, "正确答案："),
-                        vue.createElementVNode(
-                          "text",
-                          { class: "value correct" },
-                          vue.toDisplayString(vue.unref(currentQuestion).correctAnswer),
-                          1
-                          /* TEXT */
-                        )
-                      ])) : vue.createCommentVNode("v-if", true)
-                    ])) : vue.createCommentVNode("v-if", true)
-                  ])
-                ],
-                2112
-                /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */
-              )),
-              vue.createCommentVNode(" 题目操作按钮 "),
+                      vue.createElementVNode(
+                        "view",
+                        { class: "option-key" },
+                        vue.toDisplayString(item.key),
+                        1
+                        /* TEXT */
+                      ),
+                      vue.createElementVNode(
+                        "text",
+                        { class: "option-text" },
+                        vue.toDisplayString(item.label),
+                        1
+                        /* TEXT */
+                      )
+                    ], 10, ["onClick"]);
+                  }),
+                  128
+                  /* KEYED_FRAGMENT */
+                ))
+              ])) : (vue.openBlock(), vue.createElementBlock("view", {
+                key: 2,
+                class: "question-input"
+              }, [
+                vue.withDirectives(vue.createElementVNode("textarea", {
+                  "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => answers[vue.unref(currentQuestion).id] = $event),
+                  placeholder: vue.unref(currentQuestion).type === "FILL_BLANK" ? "请输入答案" : "请输入答案内容",
+                  maxlength: vue.unref(currentQuestion).type === "FILL_BLANK" ? 500 : 2e3,
+                  disabled: isViewMode.value,
+                  onBlur: saveAnswer
+                }, null, 40, ["placeholder", "maxlength", "disabled"]), [
+                  [vue.vModelText, answers[vue.unref(currentQuestion).id]]
+                ]),
+                isViewMode.value && canViewPaper.value ? (vue.openBlock(), vue.createElementBlock("view", {
+                  key: 0,
+                  class: "answer-comparison"
+                }, [
+                  vue.createElementVNode("view", { class: "answer-row" }, [
+                    vue.createElementVNode("text", { class: "label" }, "你的答案："),
+                    vue.createElementVNode(
+                      "text",
+                      { class: "value" },
+                      vue.toDisplayString(answers[vue.unref(currentQuestion).id] || "未答"),
+                      1
+                      /* TEXT */
+                    )
+                  ]),
+                  vue.unref(currentQuestion).type === "FILL_BLANK" ? (vue.openBlock(), vue.createElementBlock("view", {
+                    key: 0,
+                    class: "answer-row"
+                  }, [
+                    vue.createElementVNode("text", { class: "label" }, "正确答案："),
+                    vue.createElementVNode(
+                      "text",
+                      { class: "value correct" },
+                      vue.toDisplayString(vue.unref(currentQuestion).correctAnswer),
+                      1
+                      /* TEXT */
+                    )
+                  ])) : vue.createCommentVNode("v-if", true)
+                ])) : vue.createCommentVNode("v-if", true)
+              ])),
               vue.createElementVNode("view", { class: "question-actions" }, [
                 vue.createElementVNode("button", {
                   class: "action-btn",
@@ -12052,24 +12408,13 @@ This will fail in production.`);
             }, [
               vue.createElementVNode("text", null, "加载中...")
             ]))
-          ])) : (vue.openBlock(), vue.createElementBlock(
-            vue.Fragment,
-            { key: 1 },
-            [
-              vue.createCommentVNode(" 锁定提示 "),
-              vue.createElementVNode("view", { class: "paper-locked" }, [
-                vue.createVNode(_component_uni_icons, {
-                  type: "locked",
-                  size: "120",
-                  color: "#999"
-                }),
-                vue.createElementVNode("text", { class: "locked-text" }, "教师已关闭考后查看试卷权限，无法查看试卷内容")
-              ])
-            ],
-            2112
-            /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */
-          )),
-          vue.createCommentVNode(" 答题卡抽屉 "),
+          ])) : (vue.openBlock(), vue.createElementBlock("view", {
+            key: 1,
+            class: "paper-locked"
+          }, [
+            vue.createElementVNode("text", null, "🔒"),
+            vue.createElementVNode("text", { class: "locked-text" }, "教师已关闭考后查看试卷权限，无法查看试卷内容")
+          ])),
           showNav.value ? (vue.openBlock(), vue.createElementBlock("view", {
             key: 2,
             class: "nav-drawer",
@@ -12086,11 +12431,7 @@ This will fail in production.`);
                   class: "nav-close",
                   onClick: _cache[2] || (_cache[2] = ($event) => showNav.value = false)
                 }, [
-                  vue.createVNode(_component_uni_icons, {
-                    type: "close",
-                    size: "24",
-                    color: "#333"
-                  })
+                  vue.createElementVNode("text", null, "×")
                 ])
               ]),
               vue.createElementVNode("scroll-view", {
@@ -12122,8 +12463,8 @@ This will fail in production.`);
                               class: vue.normalizeClass(["question-item", {
                                 current: isCurrentQuestion(q.id),
                                 answered: isAnswered(q.id),
-                                correct: isViewMode.value && getQuestionResult(q.id) === true,
-                                wrong: isViewMode.value && getQuestionResult(q.id) === false
+                                correct: isViewMode.value && canViewPaper.value && getQuestionResult(q.id) === true,
+                                wrong: isViewMode.value && canViewPaper.value && getQuestionResult(q.id) === false
                               }]),
                               onClick: ($event) => jumpToQuestion(q.id)
                             }, [
@@ -12158,6 +12499,10 @@ This will fail in production.`);
                   vue.createElementVNode("view", { class: "legend-item" }, [
                     vue.createElementVNode("view", { class: "dot wrong" }),
                     vue.createElementVNode("text", null, "错误")
+                  ]),
+                  vue.createElementVNode("view", { class: "legend-item" }, [
+                    vue.createElementVNode("view", { class: "dot unanswered" }),
+                    vue.createElementVNode("text", null, "未答")
                   ])
                 ])) : (vue.openBlock(), vue.createElementBlock("view", {
                   key: 1,
@@ -12233,7 +12578,7 @@ This will fail in production.`);
             loadStatus.value = "more";
           }
         } catch (e) {
-          formatAppLog("error", "at pages/student/history.vue:97", e);
+          formatAppLog("error", "at pages/student/history.vue:103", e);
           uni.showToast({
             title: "网络错误",
             icon: "none"
@@ -12243,6 +12588,13 @@ This will fail in production.`);
           loading.value = false;
         }
       };
+      const handleBack = () => {
+        uni.navigateBack({
+          fail: () => {
+            uni.switchTab({ url: "/pages/student/index" });
+          }
+        });
+      };
       vue.onMounted(() => {
         loadData();
       });
@@ -12251,7 +12603,20 @@ This will fail in production.`);
         const _component_uni_load_more = vue.resolveComponent("uni-load-more");
         return vue.openBlock(), vue.createElementBlock("view", { class: "history" }, [
           vue.createElementVNode("view", { class: "page-header" }, [
-            vue.createElementVNode("text", { class: "title" }, "考试历史"),
+            vue.createElementVNode("view", { class: "header-top" }, [
+              vue.createElementVNode("view", {
+                class: "back-btn",
+                onClick: handleBack
+              }, [
+                vue.createVNode(_component_uni_icons, {
+                  type: "back",
+                  size: "32",
+                  color: "#333"
+                })
+              ]),
+              vue.createElementVNode("text", { class: "title" }, "考试历史"),
+              vue.createElementVNode("view", { class: "placeholder" })
+            ]),
             vue.createElementVNode("text", { class: "subtitle" }, "查看已完成考试的成绩和答卷详情")
           ]),
           vue.createCommentVNode(" 搜索栏 "),

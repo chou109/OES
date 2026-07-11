@@ -6,7 +6,7 @@
     
     <!-- 搜索栏 -->
     <view class="search-bar">
-      <picker mode="selector" :range="subjects" range-key="name" @change="onSubjectChange">
+      <picker mode="selector" :range="subjectOptions" range-key="name" @change="onSubjectChange">
         <view class="picker">
           <text class="picker-text">{{ selectedSubjectName || '选择科目' }}</text>
         </view>
@@ -128,11 +128,32 @@
           </view>
           <view class="form-item">
             <text class="form-label">导入文本 *</text>
-            <text class="form-hint">格式示例：
-单选|题目内容|选项A|选项B|选项C|选项D|正确答案|分值
-判断|题目内容|正确答案|分值
-填空|题目内容|正确答案|分值
-简答|题目内容|参考答案|分值</text>
+            <view class="form-hint">
+              <text class="hint-title">格式说明（每行一题，使用|分隔）：</text>
+              <view class="hint-example">
+                <view class="hint-line" @click="copyExample('单选|题目内容是什么？|选项A内容|选项B内容|选项C内容|选项D内容|A|5')">
+                  <text>单选|题目内容是什么？|选项A内容|选项B内容|选项C内容|选项D内容|A|5</text>
+                  <text class="copy-icon">📋</text>
+                </view>
+                <view class="hint-line" @click="copyExample('多选|哪些是正确的？|选项A|选项B|选项C|选项D|A,C|10')">
+                  <text>多选|哪些是正确的？|选项A|选项B|选项C|选项D|A,C|10</text>
+                  <text class="copy-icon">📋</text>
+                </view>
+                <view class="hint-line" @click="copyExample('判断|这句话是正确的|A|2')">
+                  <text>判断|这句话是正确的|A|2</text>
+                  <text class="copy-icon">📋</text>
+                </view>
+                <view class="hint-line" @click="copyExample('填空|答案是____|答案内容|5')">
+                  <text>填空|答案是____|答案内容|5</text>
+                  <text class="copy-icon">📋</text>
+                </view>
+                <view class="hint-line" @click="copyExample('简答|请简述原理|参考答案内容|15')">
+                  <text>简答|请简述原理|参考答案内容|15</text>
+                  <text class="copy-icon">📋</text>
+                </view>
+              </view>
+              <text class="hint-note">注：判断题正确答案填A，错误填B；多选题答案用逗号分隔。点击示例可复制</text>
+            </view>
             <textarea class="form-textarea" v-model="importText" placeholder="请粘贴题目文本..." />
           </view>
         </scroll-view>
@@ -189,6 +210,10 @@ export default {
       return subjects.value.find(s => String(s.id) === String(form.subjectId))
     })
     
+    const subjectOptions = computed(() => {
+      return [{ id: null, name: '全部' }, ...subjects.value]
+    })
+    
     const selectedSubjectName = computed(() => {
       const s = subjects.value.find(s => s.id === selectedSubjectId.value)
       return s?.name || ''
@@ -223,9 +248,9 @@ export default {
     }
     
     const getSubjectName = (subjectId) => {
-      const s = subjects.value.find(s => s.id === subjectId)
-      return s?.name || '未知科目'
-    }
+    const s = subjects.value.find(s => String(s.id) === String(subjectId))
+    return s?.name || '未知科目'
+  }
     
     const truncate = (text, len) => {
       if (!text) return '-'
@@ -302,7 +327,7 @@ export default {
       try {
         const res = await subjectApi.list()
         if (res.code === 200) {
-          subjects.value = [{ id: null, name: '全部' }, ...res.data]
+          subjects.value = res.data
         }
       } catch (e) {
         console.error(e)
@@ -314,7 +339,7 @@ export default {
       form.type = item.type
       form.subjectId = item.subjectId
       form.content = item.content
-      form.correctAnswer = item.correctAnswer
+      form.correctAnswer = item.answer || item.correctAnswer || ''
       form.score = item.score ? item.score.toString() : ''
       
       if (item.type === 'JUDGMENT') {
@@ -375,7 +400,7 @@ export default {
           subjectId: form.subjectId,
           content: form.content,
           options: form.options.filter(o => o.trim()).join('|'),
-          correctAnswer: form.correctAnswer,
+          answer: form.correctAnswer,
           score: form.score ? parseInt(form.score) : 10
         }
         
@@ -515,6 +540,18 @@ export default {
       }
     }
     
+    const copyExample = (text) => {
+      uni.setClipboardData({
+        data: text,
+        success: () => {
+          uni.showToast({ title: '复制成功', icon: 'success', duration: 1500 })
+        },
+        fail: () => {
+          uni.showToast({ title: '复制失败', icon: 'none' })
+        }
+      })
+    }
+    
     const deleteQuestion = async (item) => {
       uni.showModal({
         title: '提示',
@@ -547,11 +584,13 @@ export default {
       questionList,
       subjects,
       questionTypes,
+      subjectOptions,
       selectedSubjectName,
       selectedTypeName,
       showQuestionForm,
       editingQuestion,
       selectedFormType,
+      selectedFormSubject,
       form,
       showImportModal,
       importText,
@@ -571,6 +610,7 @@ export default {
       editQuestion,
       submitQuestion,
       submitImport,
+      copyExample,
       deleteQuestion
     }
   }
@@ -861,6 +901,57 @@ export default {
     align-items: center;
     font-size: 28rpx;
     color: #666;
+  }
+  
+  .form-hint {
+    margin-bottom: 12rpx;
+    padding: 16rpx;
+    background: #f9fafb;
+    border-radius: 8rpx;
+    
+    .hint-title {
+      font-size: 26rpx;
+      color: #666;
+      display: block;
+      margin-bottom: 12rpx;
+      font-weight: bold;
+    }
+    
+    .hint-example {
+      margin-bottom: 12rpx;
+    }
+    
+    .hint-line {
+      font-size: 22rpx;
+      color: #666;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8rpx;
+      font-family: monospace;
+      line-height: 1.4;
+      padding: 8rpx 12rpx;
+      border-radius: 4rpx;
+      background: #fff;
+      border: 1rpx solid #e5e7eb;
+      
+      &:active {
+        background: #f3f4f6;
+      }
+      
+      .copy-icon {
+        font-size: 24rpx;
+        opacity: 0.6;
+      }
+    }
+    
+    .hint-note {
+      font-size: 22rpx;
+      color: #999;
+      display: block;
+      padding-top: 8rpx;
+      border-top: 1rpx dashed #eee;
+    }
   }
 }
 

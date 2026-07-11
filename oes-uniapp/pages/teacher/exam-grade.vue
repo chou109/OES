@@ -96,7 +96,7 @@ const recordInfo = reactive({
 const subjects = ref([])
 const questions = ref([])
 const studentAnswers = ref({})
-const grades = ref({})
+const grades = reactive({})
 
 const goBack = () => {
   uni.navigateBack()
@@ -145,11 +145,12 @@ const parseOptions = (options) => {
 }
 
 const formatAnswer = (q) => {
-  if (!q.correctAnswer) return ''
+  const answer = q.answer || q.correctAnswer
+  if (!answer) return ''
   if (q.type === 'JUDGMENT') {
-    return q.correctAnswer === 'A' || q.correctAnswer === '正确' ? '正确' : '错误'
+    return answer === 'A' || answer === '正确' ? '正确' : '错误'
   }
-  return q.correctAnswer
+  return answer
 }
 
 const getStudentAnswer = (q) => {
@@ -210,21 +211,36 @@ const loadRecord = async () => {
           console.error('解析答案失败:', e)
         }
       }
-    }
-    
-    const examRes = await examApi.getById(examId.value)
-    if (examRes.code === 200) {
-      Object.assign(examInfo, examRes.data)
       
-      if (examRes.data.paperId) {
-        const qRes = await paperApi.getQuestions(examRes.data.paperId)
-        if (qRes.code === 200) {
-          questions.value = qRes.data || []
+      if (data.exam) {
+        Object.assign(examInfo, data.exam)
+        
+        if (data.questions) {
+          questions.value = data.questions || []
           questions.value.forEach(q => {
             if (isSubjective(q.type)) {
-              grades.value[q.id] = ''
+              grades[q.id] = ''
             }
           })
+        }
+      }
+    }
+    
+    if (!examInfo.title) {
+      const examRes = await examApi.getById(examId.value)
+      if (examRes.code === 200) {
+        Object.assign(examInfo, examRes.data)
+        
+        if (examRes.data.paperId && questions.value.length === 0) {
+          const qRes = await paperApi.getQuestions(examRes.data.paperId)
+          if (qRes.code === 200) {
+            questions.value = qRes.data || []
+            questions.value.forEach(q => {
+              if (isSubjective(q.type)) {
+                grades[q.id] = ''
+              }
+            })
+          }
         }
       }
     }
@@ -244,8 +260,8 @@ const submitGrade = async () => {
     let hasGrade = false
     
     questions.value.forEach(q => {
-      if (isSubjective(q.type) && grades.value[q.id] !== '') {
-        const score = parseInt(grades.value[q.id])
+      if (isSubjective(q.type) && grades[q.id] !== '') {
+        const score = parseInt(grades[q.id])
         if (!isNaN(score) && score >= 0 && score <= q.score) {
           gradeData[q.id] = score
           hasGrade = true

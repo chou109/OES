@@ -7,12 +7,27 @@
 .page-header[data-v-cee26447] {
   margin-bottom: 1rem;
 }
+.header-top[data-v-cee26447] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.375rem;
+}
+.back-btn[data-v-cee26447] {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.placeholder[data-v-cee26447] {
+  width: 2rem;
+}
 .title[data-v-cee26447] {
-  display: block;
+  display: inline-block;
   font-size: 1.5rem;
   font-weight: bold;
   color: #333;
-  margin-bottom: 0.375rem;
 }
 .subtitle[data-v-cee26447] {
   display: block;

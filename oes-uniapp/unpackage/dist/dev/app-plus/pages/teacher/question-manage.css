@@ -402,6 +402,50 @@
   font-size: 0.875rem;
   color: #666;
 }
+.form-item .form-hint {
+  margin-bottom: 0.375rem;
+  padding: 0.5rem;
+  background: #f9fafb;
+  border-radius: 0.25rem;
+}
+.form-item .form-hint .hint-title {
+  font-size: 0.8125rem;
+  color: #666;
+  display: block;
+  margin-bottom: 0.375rem;
+  font-weight: bold;
+}
+.form-item .form-hint .hint-example {
+  margin-bottom: 0.375rem;
+}
+.form-item .form-hint .hint-line {
+  font-size: 0.6875rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  font-family: monospace;
+  line-height: 1.4;
+  padding: 0.25rem 0.375rem;
+  border-radius: 0.125rem;
+  background: #fff;
+  border: 0.03125rem solid #e5e7eb;
+}
+.form-item .form-hint .hint-line:active {
+  background: #f3f4f6;
+}
+.form-item .form-hint .hint-line .copy-icon {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+.form-item .form-hint .hint-note {
+  font-size: 0.6875rem;
+  color: #999;
+  display: block;
+  padding-top: 0.25rem;
+  border-top: 0.03125rem dashed #eee;
+}
 .options-list {
   margin-bottom: 0.5rem;
 }

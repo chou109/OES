@@ -1,7 +1,13 @@
 <template>
   <view class="history">
     <view class="page-header">
-      <text class="title">考试历史</text>
+      <view class="header-top">
+        <view class="back-btn" @click="handleBack">
+          <uni-icons type="back" size="32" color="#333" />
+        </view>
+        <text class="title">考试历史</text>
+        <view class="placeholder"></view>
+      </view>
       <text class="subtitle">查看已完成考试的成绩和答卷详情</text>
     </view>
 
@@ -105,6 +111,14 @@ const loadData = async () => {
   }
 }
 
+const handleBack = () => {
+  uni.navigateBack({
+    fail: () => {
+      uni.switchTab({ url: '/pages/student/index' })
+    }
+  })
+}
+
 onMounted(() => {
   loadData()
 })
@@ -121,12 +135,30 @@ onMounted(() => {
   margin-bottom: 32rpx;
 }
 
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.back-btn {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder {
+  width: 64rpx;
+}
+
 .title {
-  display: block;
+  display: inline-block;
   font-size: 48rpx;
   font-weight: bold;
   color: #333;
-  margin-bottom: 12rpx;
 }
 
 .subtitle {

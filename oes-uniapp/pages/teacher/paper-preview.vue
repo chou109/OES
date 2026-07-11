@@ -161,13 +161,15 @@
       </scroll-view>
 
       <view class="card-legend">
-        <view class="legend-item">
-          <view class="dot current"></view>
-          <text>当前</text>
-        </view>
-        <view class="legend-item">
-          <view class="dot unanswered"></view>
-          <text>未答</text>
+        <view class="legend-row">
+          <view class="legend-item">
+            <view class="dot current"></view>
+            <text>当前</text>
+          </view>
+          <view class="legend-item">
+            <view class="dot unanswered"></view>
+            <text>未答</text>
+          </view>
         </view>
       </view>
     </view>
@@ -242,11 +244,12 @@ const parseOptions = (options) => {
 }
 
 const formatAnswer = (q) => {
-  if (!q.correctAnswer) return ''
+  const answer = q.answer || q.correctAnswer
+  if (!answer) return ''
   if (q.type === 'JUDGMENT') {
-    return q.correctAnswer === 'A' || q.correctAnswer === '正确' ? '正确' : '错误'
+    return answer === 'A' || answer === '正确' ? '正确' : '错误'
   }
-  return q.correctAnswer
+  return answer
 }
 
 const currentQuestion = computed(() => questions.value[currentIndex.value])
@@ -552,103 +555,111 @@ onLoad((options) => {
   border-radius: 32rpx 32rpx 0 0;
   display: flex;
   flex-direction: column;
-  
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 32rpx;
-    border-bottom: 1rpx solid #eee;
-    
-    .card-title {
-      font-size: 32rpx;
-      font-weight: bold;
-      color: #333;
-    }
-    
-    .close-btn {
-      padding: 8rpx;
-      
-      .close-icon {
-        font-size: 48rpx;
-        color: #999;
-      }
-    }
-  }
-  
-  .card-body {
-    flex: 1;
-    padding: 32rpx;
-    overflow-y: auto;
-  }
-  
-  .question-section {
-    margin-bottom: 32rpx;
-    
-    .section-title {
-      font-size: 28rpx;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 16rpx;
-    }
-    
-    .question-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16rpx;
-      
-      .question-item {
-        width: 64rpx;
-        height: 64rpx;
-        border-radius: 8rpx;
-        background: #f5f5f5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24rpx;
-        color: #333;
-        border: 2rpx solid transparent;
-        
-        &.current {
-          background: #409eff;
-          color: #fff;
-        }
-      }
-    }
-  }
-  
-  .card-legend {
-    padding: 24rpx 32rpx;
-    border-top: 1rpx solid #eee;
-    
-    .legend-row {
-      display: flex;
-      justify-content: center;
-      gap: 40rpx;
-    }
-    
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8rpx;
-      font-size: 24rpx;
-      color: #666;
-    }
-    
-    .dot {
-      width: 24rpx;
-      height: 24rpx;
-      border-radius: 4rpx;
-    }
-    
-    .dot.current {
-      background: #409eff;
-    }
-    
-    .dot.unanswered {
-      background: #f5f5f5;
-      border: 1rpx solid #ddd;
-    }
-  }
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.close-btn {
+  padding: 8rpx;
+}
+
+.close-icon {
+  font-size: 48rpx;
+  color: #999;
+}
+
+.card-body {
+  flex: 1;
+  padding: 32rpx;
+  overflow-y: auto;
+}
+
+.question-section {
+  margin-bottom: 32rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.question-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16rpx;
+}
+
+.question-item {
+  height: 80rpx;
+  border-radius: 12rpx;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #666;
+  border: 3rpx solid #e8e8e8;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.question-item:active {
+  transform: scale(0.96);
+}
+
+.question-item.current {
+  background: linear-gradient(135deg, #409eff 0%, #3b82f6 100%);
+  color: #fff;
+  border-color: #409eff;
+  box-shadow: 0 4rpx 16rpx rgba(64, 158, 255, 0.4);
+}
+
+.card-legend {
+  padding: 24rpx 32rpx;
+  border-top: 1rpx solid #eee;
+}
+
+.legend-row {
+  display: flex;
+  justify-content: center;
+  gap: 40rpx;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.dot {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 4rpx;
+}
+
+.dot.current {
+  background: #409eff;
+}
+
+.dot.unanswered {
+  background: #f5f5f5;
+  border: 1rpx solid #ddd;
 }
 </style>

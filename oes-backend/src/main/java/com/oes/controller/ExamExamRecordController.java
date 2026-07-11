@@ -11,6 +11,7 @@ import com.oes.service.*;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -70,129 +71,150 @@ public class ExamExamRecordController {
         }
 
         ExamExamRecord existRecord = examExamRecordService.getByExamAndStudent(examId, studentId);
-            if (existRecord != null && "ONGOING".equals(existRecord.getStatus())) {
-                // 允许继续考试
-                Map<String, Object> result = new HashMap<>();
-                result.put("recordId", existRecord.getId());
-                result.put("record", existRecord);
-                result.put("exam", exam);
-                result.put("paper", examPaperService.getById(existRecord.getPaperId()));
-                result.put("questions", examPaperService.getQuestions(examPaperService.getById(existRecord.getPaperId())));
-                result.put("duration", exam.getDuration());
-                result.put("totalScore", exam.getTotalScore());
-                result.put("examConfig", exam.getAntiCheatConfig());
-                result.put("leaveCount", existRecord.getLeaveCount() != null ? existRecord.getLeaveCount() : 0);
-                
-                // 返回已保存的答案（用于恢复答题进度）
-                List<ExamAnswer> savedAnswers = examExamRecordService.getAnswersByRecordId(existRecord.getId());
-                Map<Long, Map<String, Object>> answerMap = new HashMap<>();
-                for (ExamAnswer answer : savedAnswers) {
-                    Map<String, Object> answerInfo = new HashMap<>();
-                    answerInfo.put("answer", answer.getAnswer());
-                    answerMap.put(answer.getQuestionId(), answerInfo);
-                }
-                result.put("answerMap", answerMap);
-                
-                return R.ok(result);
-            } else if (existRecord != null && ("SUBMITTED".equals(existRecord.getStatus()) || "AUTO_SUBMITTED".equals(existRecord.getStatus()))) {
-                // 允许已提交的学生查看结果
-                Map<String, Object> result = new HashMap<>();
-                result.put("recordId", existRecord.getId());
-                result.put("record", existRecord);
-                result.put("exam", exam);
-                result.put("paper", examPaperService.getById(existRecord.getPaperId()));
-                result.put("questions", examPaperService.getQuestions(examPaperService.getById(existRecord.getPaperId())));
-                result.put("duration", exam.getDuration());
-                result.put("totalScore", exam.getTotalScore());
-                result.put("examConfig", exam.getAntiCheatConfig());
-
-                // 获取学生答案和评分信息
-                List<ExamAnswer> answers = examExamRecordService.getAnswersByRecordId(existRecord.getId());
-                Map<Long, Map<String, Object>> answerMap = new HashMap<>();
-                boolean hasSubjectiveUngraded = false;
-
-                for (ExamAnswer answer : answers) {
-                    Map<String, Object> answerInfo = new HashMap<>();
-                    answerInfo.put("answer", answer.getAnswer());
-                    answerInfo.put("isCorrect", answer.getIsCorrect());
-                    answerInfo.put("score", answer.getScore() != null ? answer.getScore() : answer.getAutoScore());
-
-                    ExamQuestion question = examQuestionService.getById(answer.getQuestionId());
-                    if (question != null) {
-                        answerInfo.put("correctAnswer", question.getAnswer());
-                        // 判断是否为主观题且未评分（需要检查autoScore和manualScore）
-                        if (isSubjective(question.getType())) {
-                            Integer totalScore = answer.getScore() != null ? answer.getScore() : 
-                                    (answer.getAutoScore() != null ? answer.getAutoScore() : 0) + 
-                                    (answer.getManualScore() != null ? answer.getManualScore() : 0);
-                            if (totalScore == 0) {
-                                hasSubjectiveUngraded = true;
-                            }
-                        }
-                    }
-                    answerMap.put(answer.getQuestionId(), answerInfo);
-                }
-                result.put("answerMap", answerMap);
-                result.put("hasSubjectiveUngraded", hasSubjectiveUngraded);
-
-                // 判断是否允许查看试卷
-                boolean allowView = false;
-                
-                // 优先使用新的 allowViewAfterExam 字段
-                System.out.println("========== 调试考后查看权限 ==========");
-                System.out.println("exam.getAllowViewAfterExam(): " + exam.getAllowViewAfterExam());
-                System.out.println("exam.getAntiCheatConfig(): " + exam.getAntiCheatConfig());
-                
-                if (exam.getAllowViewAfterExam() != null) {
-                    allowView = exam.getAllowViewAfterExam() == 1;
-                    System.out.println("使用 allowViewAfterExam 字段，值为: " + exam.getAllowViewAfterExam() + ", allowView: " + allowView);
-                } else if (exam.getAntiCheatConfig() != null) {
-                    // 兼容旧版本：从防作弊配置中读取
-                    try {
-                        Map<String, Object> config = objectMapper.readValue(exam.getAntiCheatConfig(), Map.class);
-                        if (config != null && config.containsKey("allowViewAfterExam")) {
-                            allowView = Boolean.TRUE.equals(config.get("allowViewAfterExam"));
-                            System.out.println("使用 antiCheatConfig 配置，allowViewAfterExam: " + config.get("allowViewAfterExam") + ", allowView: " + allowView);
-                        }
-                    } catch (Exception e) {
-                        allowView = false;
-                        System.out.println("解析 antiCheatConfig 失败: " + e.getMessage());
-                    }
-                } else {
-                    // 默认不允许查看
-                    allowView = false;
-                    System.out.println("未设置允许查看权限，默认不允许");
-                }
-                // 如果有主观题未评分，也不能查看详细答案
-                System.out.println("hasSubjectiveUngraded: " + hasSubjectiveUngraded);
-                if (hasSubjectiveUngraded) {
-                    allowView = false;
-                    System.out.println("存在未评分主观题，设置 allowView 为 false");
-                }
-                System.out.println("最终 allowView: " + allowView);
-                result.put("canViewPaper", allowView);
-                result.put("studentScore", existRecord.getScore());
-
-                return R.ok(result);
-            } else if (existRecord != null && "PENDING".equals(existRecord.getStatus())) {
-                // 允许状态为PENDING的学生开始考试，需要更新状态为ONGOING
-                existRecord.setStatus("ONGOING");
-                examExamRecordService.updateById(existRecord);
-                
-                Map<String, Object> result = new HashMap<>();
-                result.put("recordId", existRecord.getId());
-                result.put("record", existRecord);
-                result.put("exam", exam);
-                result.put("paper", examPaperService.getById(existRecord.getPaperId()));
-                result.put("questions", examPaperService.getQuestions(examPaperService.getById(existRecord.getPaperId())));
-                result.put("duration", exam.getDuration());
-                result.put("totalScore", exam.getTotalScore());
-                result.put("examConfig", exam.getAntiCheatConfig());
-                result.put("leaveCount", 0);
-                return R.ok(result);
-            } else if (existRecord != null) {
-                return R.error("您已参加过此考试");
+        System.out.println("existRecord=" + existRecord + ", status=" + (existRecord != null ? existRecord.getStatus() : "null"));
+        
+        if (existRecord != null && "ONGOING".equals(existRecord.getStatus())) {
+            // 允许继续考试
+            System.out.println("检测到ONGOING记录，recordId=" + existRecord.getId() + ", startTime=" + existRecord.getStartTime());
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("recordId", existRecord.getId());
+            result.put("record", existRecord);
+            result.put("exam", exam);
+            result.put("paper", examPaperService.getById(existRecord.getPaperId()));
+            result.put("questions", examPaperService.getQuestions(examPaperService.getById(existRecord.getPaperId())));
+            result.put("duration", exam.getDuration());
+            result.put("totalScore", exam.getTotalScore());
+            result.put("examConfig", exam.getAntiCheatConfig());
+            result.put("leaveCount", existRecord.getLeaveCount() != null ? existRecord.getLeaveCount() : 0);
+            
+            // 将LocalDateTime转换为字符串格式，确保前端能正确解析
+            String startTimeStr = existRecord.getStartTime() != null ? existRecord.getStartTime().toString() : null;
+            result.put("startTime", startTimeStr);
+            
+            // 返回已保存的答案（用于恢复答题进度）
+            List<ExamAnswer> savedAnswers = examExamRecordService.getAnswersByRecordId(existRecord.getId());
+            System.out.println("查询到已保存的答案数量: " + savedAnswers.size());
+            
+            Map<Long, Map<String, Object>> answerMap = new HashMap<>();
+            Map<String, String> studentAnswers = new HashMap<>();
+            for (ExamAnswer answer : savedAnswers) {
+                Map<String, Object> answerInfo = new HashMap<>();
+                answerInfo.put("answer", answer.getAnswer());
+                answerMap.put(answer.getQuestionId(), answerInfo);
+                studentAnswers.put(String.valueOf(answer.getQuestionId()), answer.getAnswer());
             }
+            result.put("answerMap", answerMap);
+            result.put("studentAnswers", studentAnswers);
+            
+            System.out.println("返回studentAnswers: " + studentAnswers);
+            
+            return R.ok(result);
+        } else if (existRecord != null && ("SUBMITTED".equals(existRecord.getStatus()) || "AUTO_SUBMITTED".equals(existRecord.getStatus()))) {
+            // 允许已提交的学生查看结果
+            Map<String, Object> result = new HashMap<>();
+            result.put("recordId", existRecord.getId());
+            result.put("record", existRecord);
+            result.put("exam", exam);
+            result.put("paper", examPaperService.getById(existRecord.getPaperId()));
+            result.put("questions", examPaperService.getQuestions(examPaperService.getById(existRecord.getPaperId())));
+            result.put("duration", exam.getDuration());
+            result.put("totalScore", exam.getTotalScore());
+            result.put("examConfig", exam.getAntiCheatConfig());
+
+            // 获取学生答案和评分信息
+            List<ExamAnswer> answers = examExamRecordService.getAnswersByRecordId(existRecord.getId());
+            Map<Long, Map<String, Object>> answerMap = new HashMap<>();
+            Map<String, String> studentAnswers = new HashMap<>();
+            boolean hasSubjectiveUngraded = false;
+
+            for (ExamAnswer answer : answers) {
+                Map<String, Object> answerInfo = new HashMap<>();
+                answerInfo.put("answer", answer.getAnswer());
+                answerInfo.put("isCorrect", answer.getIsCorrect());
+                answerInfo.put("score", answer.getScore() != null ? answer.getScore() : answer.getAutoScore());
+                
+                studentAnswers.put(String.valueOf(answer.getQuestionId()), answer.getAnswer());
+
+                ExamQuestion question = examQuestionService.getById(answer.getQuestionId());
+                if (question != null) {
+                    answerInfo.put("correctAnswer", question.getAnswer());
+                    // 判断是否为主观题且未评分（需要检查autoScore和manualScore）
+                    if (isSubjective(question.getType())) {
+                        Integer totalScore = answer.getScore() != null ? answer.getScore() : 
+                                (answer.getAutoScore() != null ? answer.getAutoScore() : 0) + 
+                                (answer.getManualScore() != null ? answer.getManualScore() : 0);
+                        if (totalScore == 0) {
+                            hasSubjectiveUngraded = true;
+                        }
+                    }
+                }
+                answerMap.put(answer.getQuestionId(), answerInfo);
+            }
+            result.put("answerMap", answerMap);
+            result.put("studentAnswers", studentAnswers);
+            result.put("hasSubjectiveUngraded", hasSubjectiveUngraded);
+
+            // 判断是否允许查看试卷
+            boolean allowView = false;
+            
+            // 优先使用新的 allowViewAfterExam 字段
+            System.out.println("========== 调试考后查看权限 ==========");
+            System.out.println("exam.getAllowViewAfterExam(): " + exam.getAllowViewAfterExam());
+            System.out.println("exam.getAntiCheatConfig(): " + exam.getAntiCheatConfig());
+            
+            if (exam.getAllowViewAfterExam() != null) {
+                allowView = exam.getAllowViewAfterExam() == 1;
+                System.out.println("使用 allowViewAfterExam 字段，值为: " + exam.getAllowViewAfterExam() + ", allowView: " + allowView);
+            } else if (exam.getAntiCheatConfig() != null) {
+                // 兼容旧版本：从防作弊配置中读取
+                try {
+                    Map<String, Object> config = objectMapper.readValue(exam.getAntiCheatConfig(), Map.class);
+                    if (config != null && config.containsKey("allowViewAfterExam")) {
+                        allowView = Boolean.TRUE.equals(config.get("allowViewAfterExam"));
+                        System.out.println("使用 antiCheatConfig 配置，allowViewAfterExam: " + config.get("allowViewAfterExam") + ", allowView: " + allowView);
+                    }
+                } catch (Exception e) {
+                    allowView = false;
+                    System.out.println("解析 antiCheatConfig 失败: " + e.getMessage());
+                }
+            } else {
+                // 默认不允许查看
+                allowView = false;
+                System.out.println("未设置允许查看权限，默认不允许");
+            }
+            // 如果有主观题未评分，也不能查看详细答案
+            System.out.println("hasSubjectiveUngraded: " + hasSubjectiveUngraded);
+            if (hasSubjectiveUngraded) {
+                allowView = false;
+                System.out.println("存在未评分主观题，设置 allowView 为 false");
+            }
+            System.out.println("最终 allowView: " + allowView);
+            result.put("canViewPaper", allowView);
+            result.put("studentScore", existRecord.getScore());
+
+            return R.ok(result);
+        } else if (existRecord != null && "PENDING".equals(existRecord.getStatus())) {
+            // 允许状态为PENDING的学生开始考试，需要更新状态为ONGOING并设置开始时间
+            existRecord.setStatus("ONGOING");
+            existRecord.setStartTime(LocalDateTime.now());
+            examExamRecordService.updateById(existRecord);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("recordId", existRecord.getId());
+            result.put("record", existRecord);
+            result.put("exam", exam);
+            result.put("paper", examPaperService.getById(existRecord.getPaperId()));
+            result.put("questions", examPaperService.getQuestions(examPaperService.getById(existRecord.getPaperId())));
+            result.put("duration", exam.getDuration());
+            result.put("totalScore", exam.getTotalScore());
+            result.put("examConfig", exam.getAntiCheatConfig());
+            result.put("leaveCount", 0);
+            result.put("startTime", existRecord.getStartTime().toString());
+            return R.ok(result);
+        } else if (existRecord != null) {
+            return R.error("您已参加过此考试");
+        }
 
         ExamPaper paper = examPaperService.getById(exam.getPaperId());
         if (paper == null) {
@@ -230,20 +252,29 @@ public class ExamExamRecordController {
 
     @PostMapping("/auto-save")
     public R<Void> autoSave(@RequestBody Map<String, Object> params, HttpServletRequest request) {
-        String token = request.getHeader("Authorization").replace("Bearer ", "");
-        Long studentId = jwtUtils.getUserIdFromToken(token);
+        try {
+            String token = request.getHeader("Authorization").replace("Bearer ", "");
+            Long studentId = jwtUtils.getUserIdFromToken(token);
 
-        Long recordId = Long.valueOf(params.get("recordId").toString());
-        Map<String, String> answers = (Map<String, String>) params.get("answers");
+            Long recordId = Long.valueOf(params.get("recordId").toString());
+            Map<String, String> answers = (Map<String, String>) params.get("answers");
+            
+            System.out.println("autoSave接收到请求: recordId=" + recordId + ", answers=" + answers);
 
-        if (answers != null) {
-            for (Map.Entry<String, String> entry : answers.entrySet()) {
-                Long questionId = Long.valueOf(entry.getKey());
-                String answer = entry.getValue();
-                examExamRecordService.saveAnswer(recordId, studentId, questionId, answer);
+            if (answers != null) {
+                for (Map.Entry<String, String> entry : answers.entrySet()) {
+                    Long questionId = Long.valueOf(entry.getKey());
+                    String answer = entry.getValue();
+                    examExamRecordService.saveAnswer(recordId, studentId, questionId, answer);
+                }
+                System.out.println("autoSave保存成功，共保存" + answers.size() + "个答案");
             }
+            return R.ok();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("autoSave保存失败: " + e.getMessage());
+            return R.error("自动保存失败: " + e.getMessage());
         }
-        return R.ok();
     }
 
     @PostMapping("/submit/{recordId}")
@@ -628,5 +659,27 @@ public class ExamExamRecordController {
         return "FILL_BLANK".equals(type) ||
                "ESSAY".equals(type) ||
                "PROGRAMMING".equals(type);
+    }
+
+    @PutMapping("/{id}/grade")
+    public R<Void> grade(@PathVariable Long id, @RequestBody Map<String, Object> params) {
+        try {
+            Map<Long, Integer> grades = new HashMap<>();
+            Map<String, Object> gradeMap = (Map<String, Object>) params.get("grades");
+            
+            if (gradeMap != null) {
+                for (Map.Entry<String, Object> entry : gradeMap.entrySet()) {
+                    Long questionId = Long.valueOf(entry.getKey());
+                    Integer score = Integer.valueOf(entry.getValue().toString());
+                    grades.put(questionId, score);
+                }
+            }
+            
+            examExamRecordService.grade(id, grades);
+            return R.ok();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return R.error("评分失败: " + e.getMessage());
+        }
     }
 }

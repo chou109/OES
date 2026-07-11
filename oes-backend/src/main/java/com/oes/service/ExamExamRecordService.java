@@ -300,6 +300,39 @@ public class ExamExamRecordService extends ServiceImpl<ExamExamRecordMapper, Exa
         }
     }
 
+    @Transactional
+    public void grade(Long recordId, Map<Long, Integer> grades) {
+        ExamExamRecord record = getById(recordId);
+        if (record == null) {
+            throw new RuntimeException("考试记录不存在");
+        }
+
+        int totalScore = 0;
+        boolean hasManualScore = false;
+
+        for (Map.Entry<Long, Integer> entry : grades.entrySet()) {
+            Long questionId = entry.getKey();
+            Integer score = entry.getValue();
+
+            ExamAnswer answer = getAnswer(recordId, questionId);
+            if (answer != null) {
+                answer.setManualScore(score);
+                int finalScore = (answer.getAutoScore() != null ? answer.getAutoScore() : 0) + score;
+                answer.setScore(finalScore);
+                examAnswerMapper.updateById(answer);
+                totalScore += finalScore;
+                hasManualScore = true;
+            }
+        }
+
+        if (hasManualScore) {
+            record.setScore(totalScore);
+            record.setScoreStatus("MANUAL_MARKED");
+            updateById(record);
+            doCalculateStatistics(record.getExamId());
+        }
+    }
+
     public void autoSubmitIfTimeout(Long recordId) {
         ExamExamRecord record = getById(recordId);
         if (record != null && "ONGOING".equals(record.getStatus())) {
